@@ -8,6 +8,7 @@ const config = require("../config/default.json");
 const process = require("../config/process.config");
 const accountModel = require("../models/accountModel");
 const userModel = require("../models/userModel");
+const axios = require("axios");
 var router = express.Router();
 
 // const recPartnerLog = require('../models/rec_partner_log.model');
@@ -35,10 +36,10 @@ function truyvan(req) {
 
 
 const confirm = (req) => {
-  const ts = +req.get("ts"); // const ts = +req.headers['ts'];
+  const ts = +req.headers.ts; // const ts = +req.headers['ts'];
 
-  const partnerCode = req.get("partnerCode");
-  const sig = req.get("sig");
+  const partnerCode = req.headers.partnerCode;
+  const sig = req.headers.sig;
   let hashSecretKey = config.auth.secret;
   const currentTime = moment().valueOf();
 
@@ -113,9 +114,30 @@ router.post("/add", async function (req, res) {
 router.get("/logConfirm", () => {
   confirm();
 });
+
+router.get("/bank-detail" , async(req,res ) => {
+  const body = req.body;
+  console.log('body',body);
+  const bank_code = config.auth.bankcode;
+  const ts = Date.now();
+  const sig = md5(bank_code + ts.toString() + JSON.stringify(body) + config.auth.secretPartnerRSA);
+  
+  console.log("sig",sig);
+  console.log("ts",ts);
+  const headers = {bank_code,sig,ts};
+  console.log('c',headers);
+  axios.get(`${config.auth.apiRoot}/bank-detail`, {
+    headers: headers,
+    data: body,
+  })
+  .then((result) => {
+    console.log('resss', result.data);
+    res.json(result.data);
+  })
+  .catch((err) => console.log('ERR', err.message));
+}) 
 // truy vấn thông tin tài khoản
 router.get("/partner", async (req, res) => {
-  truyvan(req);
   var con = confirm(req);
   if (con == 1) {
     return res.status(400).send({

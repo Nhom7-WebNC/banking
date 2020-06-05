@@ -13,7 +13,7 @@
 
       "partnerRSA": "TUB",
       "secretPartnerRSA" : "hiphopneverdie",
-      "apiRoot" : "https://great-banking.herokuapp.com/api/",
+      "apiRoot" : "https://great-banking.herokuapp.com/api",
 
 
       "partnerPGP": "20PGP",
