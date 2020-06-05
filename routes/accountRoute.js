@@ -36,6 +36,7 @@ function truyvan(req) {
 
 
 const confirm = (req) => {
+  console.log('header',req.headers);
   const ts = +req.headers.ts; // const ts = +req.headers['ts'];
 
   const partnerCode = req.headers.partnerCode;
