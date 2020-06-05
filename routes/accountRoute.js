@@ -54,7 +54,7 @@ const confirm = (req) => {
     return 1;
   }
 
-  if (partnerCode != config.auth.partnerRSA && partnerCode != config.auth.partnerPGP && partnerCode != config.auth.partnerForTestRSA) {
+  if (partnerCode != config.auth.partnerRSA && partnerCode != config.auth.partnerPGP ) {
     //điền Code của bank - partner
     return 2;
   }
