@@ -14,23 +14,23 @@ var router = express.Router();
 // const recPartnerLog = require('../models/rec_partner_log.model');
 // const partnerCallLog = require('../models/partner_call_log.model');
 // const transactionModel = require("../models/transaction.model");
-function truyvan(req) {
-  const {partnerCode,ts,sig} = req.headers;
+// function truyvan(req) {
+//   const {partnerCode,ts,sig} = req.headers;
 
-  const currentTime = moment().valueOf();
-  if (currentTime - ts > config.auth.expireTime) {
-    return 1;
-  }
+//   const currentTime = moment().valueOf();
+//   if (currentTime - ts > config.auth.expireTime) {
+//     return 1;
+//   }
 
-  const comparingSign = md5(partnerCode +  ts + JSON.stringify(req.body) + config.auth.secret);
+//   const comparingSign = md5(partnerCode +  ts + JSON.stringify(req.body) + config.auth.secret);
 
-  if (sig != comparingSign) {
-    return 2;
-  }
+//   if (sig != comparingSign) {
+//     return 2;
+//   }
 
-  console.log("currentTime",currentTime);
-  console.log("sig",sig);
-}
+//   console.log("currentTime",currentTime);
+//   console.log("sig",sig);
+// }
 
 
 
@@ -41,14 +41,14 @@ const confirm = (req) => {
 
   const partnerCode = req.headers.partnerCode;
   const sig = req.headers.sig;
-  let hashSecretKey = config.auth.secret;
+  const hashSecretKey = req.headers.secret;
   const currentTime = moment().valueOf();
 
   console.log("ts :", ts);
   console.log("partnerCode :", partnerCode);
   console.log("sig :", sig);
   console.log("has :", ts);
-
+  
 
 
   if (currentTime - ts > config.auth.expireTime) {
@@ -76,6 +76,59 @@ const confirm = (req) => {
   console.log(partnerCode)
   console.log(sig);
 };
+router.get("/partner", async (req, res) => {
+  var con = confirm(req);
+  if (con == 1) {
+    return res.status(400).send({
+      message: "The request was out of date.", // quá hạn
+    });
+  }
+
+  if (con == 2) {
+    return res.status(400).send({
+      message: "You are not one of our partners.",
+    });
+  }
+
+  if (con == 3) {
+    return res.status(400).send({
+      message: "The file was changed by strangers.",
+    });
+  }
+
+  if (con == 4) {
+    return res.status(400).send({
+      message: "Missing account_number.",
+    });
+  }
+
+  try {
+    const rows_id = await accountModel.findByAccountNumber(req.body.account_number);
+    const idFind = rows_id[0].user_id;
+    const rows = await userModel.findById(idFind);
+    // console.log("12345");
+    if (rows.length == 0) {
+      return res.status(403).send({ message: `No user has account number ${req.body.account_number}` });
+    } else {
+      const ret = {
+        name: rows[0].name
+      };
+      //update Partner_Call_Log
+      const entityUpdateLog1 = {
+        bank_code: req.get("partnerCode"),
+        account_number: req.body.account_number,
+        created_at: moment().format('YYYY-MM-DD HH:mm:ss'),
+      }
+
+      // const updatePartnerLog1 = await partnerCallLog.add(entityUpdateLog1);
+
+      return res.status(200).send(ret);
+    }
+  } catch (err) {
+    console.log("error: ", err.message);
+    return res.status(500).send({ message: "Error." });
+  }
+});
 
 //Thêm mới 1 account - từ một user_id bên bảng users
 // Cái này chỉ dành cho trong nội bộ
@@ -138,59 +191,6 @@ router.get("/bank-detail" , async(req,res ) => {
   .catch((err) => console.log('ERR', err.message));
 }) 
 // truy vấn thông tin tài khoản
-router.get("/partner", async (req, res) => {
-  var con = confirm(req);
-  if (con == 1) {
-    return res.status(400).send({
-      message: "The request was out of date.", // quá hạn
-    });
-  }
-
-  if (con == 2) {
-    return res.status(400).send({
-      message: "You are not one of our partners.",
-    });
-  }
-
-  if (con == 3) {
-    return res.status(400).send({
-      message: "The file was changed by strangers.",
-    });
-  }
-
-  if (con == 4) {
-    return res.status(400).send({
-      message: "Missing account_number.",
-    });
-  }
-
-  try {
-    const rows_id = await accountModel.findByAccountNumber(req.body.account_number);
-    const idFind = rows_id[0].user_id;
-    const rows = await userModel.findById(idFind);
-    // console.log("12345");
-    if (rows.length == 0) {
-      return res.status(403).send({ message: `No user has account number ${req.body.account_number}` });
-    } else {
-      const ret = {
-        name: rows[0].name
-      };
-      //update Partner_Call_Log
-      const entityUpdateLog1 = {
-        bank_code: req.get("partnerCode"),
-        account_number: req.body.account_number,
-        created_at: moment().format('YYYY-MM-DD HH:mm:ss'),
-      }
-
-      // const updatePartnerLog1 = await partnerCallLog.add(entityUpdateLog1);
-
-      return res.status(200).send(ret);
-    }
-  } catch (err) {
-    console.log("error: ", err.message);
-    return res.status(500).send({ message: "Error." });
-  }
-});
 
 // nộp tiền vào tài khoản
 router.post("/partner/recharge", async function (req, res) {
