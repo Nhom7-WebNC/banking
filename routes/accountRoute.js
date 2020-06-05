@@ -13,13 +13,41 @@ var router = express.Router();
 // const recPartnerLog = require('../models/rec_partner_log.model');
 // const partnerCallLog = require('../models/partner_call_log.model');
 // const transactionModel = require("../models/transaction.model");
+function truyvan(req) {
+  const { partnerCode, ts, sig } = req.headers;
+
+  const currentTime = moment().valueOf();
+  if (currentTime - ts > config.auth.expireTime) {
+    return 1;
+  }
+
+  const comparingSign = md5(partnerCode +  ts + JSON.stringify(req.body) + config.auth.secret);
+
+  if (sig != comparingSign) {
+    return 2;
+  }
+
+  console.log("currentTime",currentTime);
+  console.log("sig",sig);
+}
+truyvanRSA();
+
+
 
 const confirm = (req) => {
   const ts = +req.get("ts"); // const ts = +req.headers['ts'];
+
   const partnerCode = req.get("partnerCode");
   const sig = req.get("sig");
-  let hashSecretKey; // = md5(config.auth.secretPartner);
+  let hashSecretKey = config.auth.secret;
   const currentTime = moment().valueOf();
+
+  console.log("ts :", ts);
+  console.log("partnerCode :", partnerCode);
+  console.log("sig :", sig);
+  console.log("has :", ts);
+
+
 
   if (currentTime - ts > config.auth.expireTime) {
     return 1;
@@ -30,16 +58,8 @@ const confirm = (req) => {
     return 2;
   }
 
-  if (partnerCode == config.auth.partnerRSA) {
-    hashSecretKey = md5(config.auth.secretPartnerRSA);
-  }
-  if (partnerCode == config.auth.partnerPGP) {
-    hashSecretKey = md5(config.auth.secretPartnerPGP);
-  }
-  if (partnerCode == config.auth.partnerForTestRSA) {
-    hashSecretKey = md5(config.auth.secretPartnerForTestRSA);
-  }
-  const comparingSign = md5(partnerCode +  ts + JSON.stringify(req.body) + hashSecretKey);
+
+  const comparingSign = md5(partnerCode + ts + JSON.stringify(req.body) + hashSecretKey);
 
   if (sig != comparingSign) {
     return 3;
@@ -47,9 +67,12 @@ const confirm = (req) => {
 
   if (!req.body.account_number) {
     return 4;
-  } else {
-    return 0;
   }
+  const hashSecretKey = config.auth.secret;
+  const sig = md5(partnerCode + ts + JSON.stringify(testbody) + hashSecretKey);
+  console.log(ts);
+  console.log(partnerCode)
+  console.log(sig);
 };
 
 //Thêm mới 1 account - từ một user_id bên bảng users
@@ -87,6 +110,9 @@ router.post("/add", async function (req, res) {
   }
 });
 
+router.get("/logConfirm", () => {
+  confirm();
+});
 // truy vấn thông tin tài khoản
 router.get("/partner", async (req, res) => {
   var con = confirm(req);
@@ -238,7 +264,7 @@ router.post("/partner/recharge", async function (req, res) {
         message: openpgp.cleartext.fromText(JSON.stringify(responseForClient)),
         privateKeys: [privateKey]
       });
-      
+
       res.status(203).json({
         status: "PGP success",
         responseSignature: cleartext,
