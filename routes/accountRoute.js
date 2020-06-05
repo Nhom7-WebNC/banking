@@ -14,7 +14,7 @@ var router = express.Router();
 // const partnerCallLog = require('../models/partner_call_log.model');
 // const transactionModel = require("../models/transaction.model");
 function truyvan(req) {
-  const { partnerCode, ts, sig } = req.headers;
+  const {partnerCode,ts,sig} = req.headers;
 
   const currentTime = moment().valueOf();
   if (currentTime - ts > config.auth.expireTime) {
@@ -30,7 +30,7 @@ function truyvan(req) {
   console.log("currentTime",currentTime);
   console.log("sig",sig);
 }
-truyvanRSA();
+
 
 
 
@@ -68,8 +68,8 @@ const confirm = (req) => {
   if (!req.body.account_number) {
     return 4;
   }
-  const hashSecretKey = config.auth.secret;
-  const sig = md5(partnerCode + ts + JSON.stringify(testbody) + hashSecretKey);
+  hashSecretKey = config.auth.secret;
+   sig = md5(partnerCode + ts + JSON.stringify(testbody) + hashSecretKey);
   console.log(ts);
   console.log(partnerCode)
   console.log(sig);
@@ -115,6 +115,7 @@ router.get("/logConfirm", () => {
 });
 // truy vấn thông tin tài khoản
 router.get("/partner", async (req, res) => {
+  truyvan(req);
   var con = confirm(req);
   if (con == 1) {
     return res.status(400).send({
@@ -149,7 +150,7 @@ router.get("/partner", async (req, res) => {
       return res.status(403).send({ message: `No user has account number ${req.body.account_number}` });
     } else {
       const ret = {
-        fullname: rows[0].fullname
+        name: rows[0].name
       };
       //update Partner_Call_Log
       const entityUpdateLog1 = {
@@ -158,7 +159,7 @@ router.get("/partner", async (req, res) => {
         created_at: moment().format('YYYY-MM-DD HH:mm:ss'),
       }
 
-      const updatePartnerLog1 = await partnerCallLog.add(entityUpdateLog1);
+      // const updatePartnerLog1 = await partnerCallLog.add(entityUpdateLog1);
 
       return res.status(200).send(ret);
     }
