@@ -1,7 +1,7 @@
 var express = require("express");
 const moment = require("moment");
 const md5 = require("md5");
-const hash=require('object-hash');
+const hash = require("object-hash");
 const NodeRSA = require("node-rsa");
 const openpgp = require("openpgp");
 const fs = require("fs").promises;
@@ -33,42 +33,38 @@ var router = express.Router();
 //   console.log("sig",sig);
 // }
 
-
-
-
 const confirm = (req) => {
-  console.log('header',req.headers);
+  console.log("header", req.headers);
   const ts = req.headers.ts; // const ts = +req.headers['ts'];
 
   // const partnerCode = req.headers.partnerCode;
   const partnerCode = req.get("partnerCode");
   const sig = req.headers.sig;
-  const secret =req.headers.secret;
+  const secret = req.headers.secret;
   const currentTime = moment().valueOf();
 
   console.log(config.auth.partnerRSA);
-  console.log('m partCode', partnerCode);
-  console.log('m partCode2', JSON.stringify(req.body));
-  console.log('m partCode3', secret);
-  
-
+  console.log("m partCode", partnerCode);
+  console.log("m partCode2", JSON.stringify(req.body));
+  console.log("m partCode3", secret);
 
   if (currentTime - ts > config.auth.expireTime) {
     console.log("return 1");
     return 1;
   }
 
-  if (partnerCode != config.auth.partnerRSA && partnerCode != config.auth.partnerPGP ) {
+  if (
+    partnerCode != config.auth.partnerRSA &&
+    partnerCode != config.auth.partnerPGP
+  ) {
     console.log("return 2");
     return 2;
   }
 
-
   const comparingSign = hash.MD5(ts + JSON.stringify(req.body) + secret);
-  
 
   if (sig != comparingSign) {
-    
+    console.log(comparingSign);
     console.log("return 3");
     return 3;
   }
@@ -82,19 +78,22 @@ const confirm = (req) => {
 };
 router.get("/partner", async (req, res) => {
   var con = confirm(req);
-  if (con == 1) {   //time #
+  if (con == 1) {
+    //time #
     return res.status(400).send({
       message: "The request was out of date.", // quá hạn
     });
   }
 
-  if (con == 2) {   //partnerCode #
+  if (con == 2) {
+    //partnerCode #
     return res.status(400).send({
       message: "You are not one of our partners.",
     });
   }
 
-  if (con == 3) {   //sig #
+  if (con == 3) {
+    //sig #
     return res.status(400).send({
       message: "The file was changed by strangers.",
     });
@@ -107,22 +106,26 @@ router.get("/partner", async (req, res) => {
   }
 
   try {
-    const rows_id = await accountModel.findByAccountNumber(req.body.account_number);
+    const rows_id = await accountModel.findByAccountNumber(
+      req.body.account_number
+    );
     const idFind = rows_id[0].user_id;
     const rows = await userModel.findById(idFind);
     // console.log("12345");
     if (rows.length == 0) {
-      return res.status(403).send({ message: `No user has account number ${req.body.account_number}` });
+      return res.status(403).send({
+        message: `No user has account number ${req.body.account_number}`,
+      });
     } else {
       const ret = {
-        name: rows[0].name
+        name: rows[0].name,
       };
       //update Partner_Call_Log
       const entityUpdateLog1 = {
         bank_code: req.get("partnerCode"),
         account_number: req.body.account_number,
-        created_at: moment().format('YYYY-MM-DD HH:mm:ss'),
-      }
+        created_at: moment().format("YYYY-MM-DD HH:mm:ss"),
+      };
 
       // const updatePartnerLog1 = await partnerCallLog.add(entityUpdateLog1);
 
@@ -152,7 +155,7 @@ router.post("/add", async function (req, res) {
         user_id: req.body.user_id,
         balance: req.body.balance,
         status: 1,
-        created_at: moment().format('YYYY-MM-DD HH:mm:ss')
+        created_at: moment().format("YYYY-MM-DD HH:mm:ss"),
       };
 
       try {
@@ -173,33 +176,38 @@ router.get("/logConfirm", () => {
   confirm();
 });
 
-router.get("/bank-detail" , async(req,res ) => {
+router.get("/bank-detail", async (req, res) => {
   const body = req.body;
-  console.log('body',body);
+  console.log("body", body);
   const bank_code = config.auth.bankcode;
   const ts = Date.now();
-  const sig = hash.MD5(bank_code + '9990037865399' + JSON.stringify(body) + config.auth.secretPartnerRSA);
-
-  console.log("sig",sig);
-  console.log("ts",ts);
-  const headers = {bank_code,sig,ts};
-  console.log('c',headers);
-  axios.get(`${config.auth.apiRoot}/bank-detail`, {
-    headers: headers,
-    data: body,
-  })
-  .then((result) => {
-    console.log('resss', result.data);
-    res.json(result.data);
-  })
-  .catch((err) => console.log('ERR', err.message));
-}) 
+  const sig = hash.MD5(
+    bank_code +
+      "9990037865399" +
+      JSON.stringify(body) +
+      config.auth.secretPartnerRSA
+  );
+  console.log("sig", sig);
+  console.log("ts", ts);
+  const headers = { bank_code, sig, ts };
+  console.log("c", headers);
+  axios
+    .get(`${config.auth.apiRoot}/bank-detail`, {
+      headers: headers,
+      data: body,
+    })
+    .then((result) => {
+      console.log("resss", result.data);
+      res.json(result.data);
+    })
+    .catch((err) => console.log("ERR", err.message));
+});
 // truy vấn thông tin tài khoản
 
 // nộp tiền vào tài khoản
 router.post("/partner/recharge", async function (req, res) {
   const partnerCode = req.get("partnerCode");
-  const signature = req.get("signature"); // sig hay sign ?  
+  const signature = req.get("signature"); // sig hay sign ?
 
   // Kiểm tra ngân hàng liên kết là RSA/ PGP hay ForTest để lấy keyPulic
   let partner;
@@ -213,7 +221,12 @@ router.post("/partner/recharge", async function (req, res) {
     partner = process.partnerForTestRSA;
   }
   const keyPublic = new NodeRSA(partner.RSA_PUBLICKEY);
-  const veri = keyPublic.verify(JSON.stringify(req.body), signature, "base64", "base64");
+  const veri = keyPublic.verify(
+    JSON.stringify(req.body),
+    signature,
+    "base64",
+    "base64"
+  );
   // const data = req.body.account_num + ', ' + req.body.money + ', ' + req.body.currentTime;
 
   // (xem lai source encoding: (base64/utf8))
@@ -251,7 +264,9 @@ router.post("/partner/recharge", async function (req, res) {
   }
 
   try {
-    const account = await accountModel.findByAccountNumber(req.body.account_number);
+    const account = await accountModel.findByAccountNumber(
+      req.body.account_number
+    );
     if (account.length <= 0) {
       res.send("Number not found");
       throw createError(401, "Number not found");
@@ -263,10 +278,9 @@ router.post("/partner/recharge", async function (req, res) {
 
     const entity = {
       balance: newMoney,
-      updated_at: moment().format('YYYY-MM-DD HH:mm:ss'),
+      updated_at: moment().format("YYYY-MM-DD HH:mm:ss"),
     };
     const ret = await accountModel.updateMoney(account[0].user_id, entity); //update lai so du tai khoan
-
 
     // response về cho ngân hàng B :
     const responseForClient = {
@@ -275,7 +289,11 @@ router.post("/partner/recharge", async function (req, res) {
       currentTime: moment().valueOf(),
     };
     const pCode = req.get("partnerCode");
-    if (pCode == config.auth.partnerRSA || pCode == config.auth.partnerForTestRSA) { // partner RSA
+    if (
+      pCode == config.auth.partnerRSA ||
+      pCode == config.auth.partnerForTestRSA
+    ) {
+      // partner RSA
       const keyPrivate = new NodeRSA(process.ourkey.RSA_PRIVATEKEY);
       const keysigned = keyPrivate.sign(responseForClient, "base64", "base64");
 
@@ -283,14 +301,17 @@ router.post("/partner/recharge", async function (req, res) {
         status: "RSA success",
         responseSignature: keysigned,
       });
-    } else {  // partner PGP
+    } else {
+      // partner PGP
       const privateKeyArmored = process.ourkey.PGP_PRIVATEKEY;
-      const { keys: [privateKey] } = await openpgp.key.readArmored(privateKeyArmored);
+      const {
+        keys: [privateKey],
+      } = await openpgp.key.readArmored(privateKeyArmored);
       await privateKey.decrypt(process.ourkey.passpharse);
       // Sign => save into cleartext
       const { data: cleartext } = await openpgp.sign({
         message: openpgp.cleartext.fromText(JSON.stringify(responseForClient)),
-        privateKeys: [privateKey]
+        privateKeys: [privateKey],
       });
 
       res.status(203).json({
@@ -304,11 +325,10 @@ router.post("/partner/recharge", async function (req, res) {
       bank_code: req.get("partnerCode"),
       receive_account_number: req.body.account_number,
       money: moneySend,
-      created_at: moment().format('YYYY-MM-DD HH:mm:ss'),
-    }
+      created_at: moment().format("YYYY-MM-DD HH:mm:ss"),
+    };
 
     const updatePartnerLog = await recPartnerLog.add(entityUpdateLog);
-
 
     // const currentTime = moment().valueOf();
     // const data = req.body.account_num + ", " + req.body.money + ", " + req.body.currentTime;
