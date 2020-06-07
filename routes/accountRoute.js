@@ -104,15 +104,26 @@ router.post("/transfer", async function (req, res) {
 });
 
 router.post("/partner/transfer", async (req, res) => {
-  const keyPublic = new NodeRSA(process.partner.publicKeyRSA);
-  // const myKeyPrivate = new NodeRSA(config.auth.privateKey);
-  // const data = req.body.account_num + ', ' + req.body.money + ', ' + req.body.currentTime;
+  //tạo key
   const { ts, bank_code, sig } = req.headers;
-  const hashString = hash.MD5(ts + JSON.stringify(req.body) + config.auth.secret);
+  // const publicString = fs.readFileSync("partner_RSA_private.key", "utf8");
+  // const publicKey = new NodeRSA().importKey(publicString);
 
-  var veri = keyPublic.verify(hashString, sig, "hex", "hex");
-  // (xem lai source encoding: (base64/utf8))
-  // source encoding cua ham veri() phu thuoc vao ham sign()
+  const body = req.body;
+  // const ts2 = moment().valueOf();
+  // const hashString3 = hash.MD5(bank_code + ts + JSON.stringify(req.body) + config.auth.secret);
+  // const mySign = publicKey.sign(hashString3, "hex", "hex");
+
+  // console.log(ts2);
+  // console.log("hash", hashString3);
+
+  //giãi key
+
+  const privateString = fs.readFileSync("partner_RSA_public.key", "utf8");
+  const privateKey = new NodeRSA().importKey(privateString);
+  const hashString = hash.MD5(bank_code + ts + JSON.stringify(req.body) + config.auth.secret);
+
+  var veri = privateKey.verify(hashString, sig, "hex", "hex");
 
   const currentTime = moment().valueOf();
 
@@ -126,12 +137,6 @@ router.post("/partner/transfer", async (req, res) => {
     console.log("return 2");
     return 2;
   }
-
-  // const comparingSign = "8685a1e0c9a64edb138216e66188fb17";
-  // if (sig != hashString) {
-  //   console.log("return 3");
-  //   return 3;
-  // }
 
   if (!req.body.transferer) {
     console.log("return 4");
