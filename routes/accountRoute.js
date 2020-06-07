@@ -11,9 +11,9 @@ const accountModel = require("../models/accountModel");
 const userModel = require("../models/userModel");
 const axios = require("axios");
 var router = express.Router();
+var superagent = require("superagent");
 
 // const recPartnerLog = require('../models/rec_partner_log.model');
-// const partnerCallLog = require('../models/partner_call_log.model');
 // const transactionModel = require("../models/transaction.model");
 // function truyvan(req) {
 //   const {partnerCode,ts,sig} = req.headers;
@@ -83,7 +83,6 @@ router.get("/partner", async (req, res) => {
   }
 
   if (con == 2) {
-    //partnerCode #
     return res.status(400).send({
       message: "You are not one of our partners.",
     });
@@ -175,26 +174,21 @@ router.get("/bank-detail", async (req, res) => {
   const bank_code = config.auth.bankcode;
 
   const ts = Date.now();
-  const sig = hash.MD5(
-    bank_code + "9990037865399" + JSON.stringify(body) + config.auth.secretPartnerRSA
-  );
+  const sig = hash.MD5(bank_code + ts + JSON.stringify(body) + config.auth.secretPartnerRSA);
   console.log("sig", sig);
   console.log("ts", ts);
   const headers = { bank_code, sig, ts };
   console.log("headers", headers);
   console.log("url", `${config.auth.apiRoot}/bank-detail`);
-  const aiosInstance = axios.create();
-
-  axios
-    .get(`${config.auth.apiRoot}/bank-detail`, {
-      headers: headers,
-      data: body,
-    })
-    .then((result) => {
-      console.log("resss", result.data);
-      res.json(result.data);
-    })
-    .catch((err) => console.log("ERR1", err.message));
+  superagent
+    .get(`${config.auth.apiRoot}/bank-detail`)
+    .send(body)
+    .set(headers)
+    .end((err, result) => {
+      res
+        .status(200)
+        .json({ account_number: req.body.account_number, name: JSON.parse(result.res.text).name });
+    });
 });
 // truy vấn thông tin tài khoản
 
