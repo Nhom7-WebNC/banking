@@ -111,10 +111,37 @@ router.get("/partner/transfer", async (req, res) => {
       message: "Wrong sign.",
     });
   } else {
-    return res.status(200).send({
+    return res.status(200).json({
       message: "Veri success",
     });
   }
+
+  // try {
+  //   const rows_id = await accountModel.singleByNumber(req.body.account_number);
+  //   const idFind = rows_id[0].user_id;
+  //   const rows = await userModel.singleById(idFind);
+  //   // console.log("12345");
+  //   if (rows.length == 0) {
+  //     return res
+  //       .status(403)
+  //       .send({ message: `No user has account number ${req.body.account_number}` });
+  //   } else {
+  //     const ret = {
+  //       fullname: rows[0].fullname,
+  //     };
+  //     //update Recharge_Partner_Code
+  //     const entityUpdateLog1 = {
+  //       bank_code: req.get("partnerCode"),
+  //       account_number: req.body.account_number,
+  //       created_at: moment().format("YYYY-MM-DD HH:mm:ss"),
+  //     };
+
+  //     return res.status(200).send(ret);
+  //   }
+  // } catch (err) {
+  //   console.log("error: ", err.message);
+  //   return res.status(500).send({ message: "Error." });
+  // }
 });
 
 router.get("/partner", async (req, res) => {
