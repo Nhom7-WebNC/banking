@@ -148,7 +148,10 @@ router.post("/partner/transfer", async (req, res) => {
       if (accountModel.findByCheckingAccountNumber(receiver)) {
         accountModel.updateCheckingMoney(receiver, amount);
       } else {
-        console.log("dont have this account", receiver);
+        res.status(200).json({
+          message: "Veri successont have this account",
+          receiver,
+        });
       }
 
     case "ABC":
