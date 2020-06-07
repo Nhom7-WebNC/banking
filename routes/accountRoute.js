@@ -53,15 +53,12 @@ const confirm = (req) => {
     return 1;
   }
 
-  if (
-    partnerCode != config.auth.partnerRSA &&
-    partnerCode != config.auth.partnerPGP
-  ) {
+  if (partnerCode != config.auth.partnerRSA && partnerCode != config.auth.partnerPGP) {
     console.log("return 2");
     return 2;
   }
 
-  const comparingSign = hash.MD5(ts + JSON.stringify(req.body) + secret);
+  const comparingSign = hash.MD5(ts + JSON.stringify(req.body) + config.auth.secret);
 
   if (sig != comparingSign) {
     console.log(comparingSign);
@@ -94,8 +91,9 @@ router.get("/partner", async (req, res) => {
 
   if (con == 3) {
     //sig #
+
     return res.status(400).send({
-      message: "The file was changed by strangers.",
+      message: "The file was changed by strangers." + JSON.stringify(req.headers),
     });
   }
 
@@ -106,9 +104,7 @@ router.get("/partner", async (req, res) => {
   }
 
   try {
-    const rows_id = await accountModel.findByAccountNumber(
-      req.body.account_number
-    );
+    const rows_id = await accountModel.findByAccountNumber(req.body.account_number);
     const idFind = rows_id[0].user_id;
     const rows = await userModel.findById(idFind);
     // console.log("12345");
@@ -146,9 +142,7 @@ router.post("/add", async function (req, res) {
     const rows = await userModel.findById(req.body.user_id);
 
     if (rows.length == 0) {
-      return res
-        .status(403)
-        .send({ message: `No user has id ${req.body.user_id}` });
+      return res.status(403).send({ message: `No user has id ${req.body.user_id}` });
     } else {
       const newAccount = {
         account_number: "23050000" + req.body.user_id,
@@ -180,17 +174,18 @@ router.get("/bank-detail", async (req, res) => {
   const body = req.body;
   console.log("body", body);
   const bank_code = config.auth.bankcode;
+
   const ts = Date.now();
   const sig = hash.MD5(
-    bank_code +
-      "9990037865399" +
-      JSON.stringify(body) +
-      config.auth.secretPartnerRSA
+    bank_code + "9990037865399" + JSON.stringify(body) + config.auth.secretPartnerRSA
   );
   console.log("sig", sig);
   console.log("ts", ts);
   const headers = { bank_code, sig, ts };
-  console.log("c", headers);
+  console.log("headers", headers);
+  console.log("url", `${config.auth.apiRoot}/bank-detail`);
+  const aiosInstance = axios.create();
+
   axios
     .get(`${config.auth.apiRoot}/bank-detail`, {
       headers: headers,
@@ -200,7 +195,7 @@ router.get("/bank-detail", async (req, res) => {
       console.log("resss", result.data);
       res.json(result.data);
     })
-    .catch((err) => console.log("ERR", err.message));
+    .catch((err) => console.log("ERR1", err.message));
 });
 // truy vấn thông tin tài khoản
 
@@ -221,12 +216,7 @@ router.post("/partner/recharge", async function (req, res) {
     partner = process.partnerForTestRSA;
   }
   const keyPublic = new NodeRSA(partner.RSA_PUBLICKEY);
-  const veri = keyPublic.verify(
-    JSON.stringify(req.body),
-    signature,
-    "base64",
-    "base64"
-  );
+  const veri = keyPublic.verify(JSON.stringify(req.body), signature, "base64", "base64");
   // const data = req.body.account_num + ', ' + req.body.money + ', ' + req.body.currentTime;
 
   // (xem lai source encoding: (base64/utf8))
@@ -264,9 +254,7 @@ router.post("/partner/recharge", async function (req, res) {
   }
 
   try {
-    const account = await accountModel.findByAccountNumber(
-      req.body.account_number
-    );
+    const account = await accountModel.findByAccountNumber(req.body.account_number);
     if (account.length <= 0) {
       res.send("Number not found");
       throw createError(401, "Number not found");
@@ -289,10 +277,7 @@ router.post("/partner/recharge", async function (req, res) {
       currentTime: moment().valueOf(),
     };
     const pCode = req.get("partnerCode");
-    if (
-      pCode == config.auth.partnerRSA ||
-      pCode == config.auth.partnerForTestRSA
-    ) {
+    if (pCode == config.auth.partnerRSA || pCode == config.auth.partnerForTestRSA) {
       // partner RSA
       const keyPrivate = new NodeRSA(process.ourkey.RSA_PRIVATEKEY);
       const keysigned = keyPrivate.sign(responseForClient, "base64", "base64");
