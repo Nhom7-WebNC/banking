@@ -58,8 +58,8 @@ const confirm = (req) => {
     return 2;
   }
 
-  // const comparingSign = hash.MD5(ts + JSON.stringify(req.body) + config.auth.secret);
-  const comparingSign = "8685a1e0c9a64edb138216e66188fb17";
+  const comparingSign = hash.MD5(ts + JSON.stringify(req.body) + config.auth.secret);
+  // const comparingSign = "8685a1e0c9a64edb138216e66188fb17";
   if (sig != comparingSign) {
     console.log(comparingSign);
     console.log("return 3");
@@ -148,7 +148,6 @@ router.post("/add", async function (req, res) {
         account_number: "23050000" + req.body.user_id,
         user_id: req.body.user_id,
         balance: req.body.balance,
-        status: 1,
         created_at: moment().format("YYYY-MM-DD HH:mm:ss"),
       };
 
