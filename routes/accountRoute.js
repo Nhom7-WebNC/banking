@@ -38,12 +38,12 @@ var router = express.Router();
 
 const confirm = (req) => {
   console.log('header',req.headers);
-  const ts = +req.headers.ts; // const ts = +req.headers['ts'];
+  const ts = req.headers.ts; // const ts = +req.headers['ts'];
 
   // const partnerCode = req.headers.partnerCode;
   const partnerCode = req.get("partnerCode");
   const sig = req.headers.sig;
-  const hashSecretKey = md5(config.auth.secretPartnerRSA);
+  const hashSecretKey = hash.MD5(config.auth.secretPartnerRSA);
   const currentTime = moment().valueOf();
 
   console.log(config.auth.partnerRSA);
