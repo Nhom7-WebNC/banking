@@ -39,58 +39,61 @@ const confirm = (req) => {
   console.log('header',req.headers);
   const ts = +req.headers.ts; // const ts = +req.headers['ts'];
 
-  const partnerCode = req.headers.partnerCode;
+  // const partnerCode = req.headers.partnerCode;
+  const partnerCode = req.get("partnerCode");
   const sig = req.headers.sig;
-  const hashSecretKey = req.headers.secret;
+  const hashSecretKey = md5(config.auth.secretPartnerRSA);
   const currentTime = moment().valueOf();
 
-  console.log("ts :", ts);
-  console.log("partnerCode :", partnerCode);
-  console.log("sig :", sig);
-  console.log("has :", ts);
+  console.log(config.auth.partnerRSA);
+  console.log('m partCode', partnerCode);
+  console.log('m partCode2', JSON.stringify(req.body));
+  console.log('m partCode3', hashSecretKey);
   
 
 
   if (currentTime - ts > config.auth.expireTime) {
+    console.log("return 1");
     return 1;
   }
 
   if (partnerCode != config.auth.partnerRSA && partnerCode != config.auth.partnerPGP ) {
-    //điền Code của bank - partner
+    console.log("return 2");
     return 2;
   }
 
 
-  const comparingSign = md5(partnerCode + ts + JSON.stringify(req.body) + hashSecretKey);
+  const comparingSign = md5(ts + JSON.stringify(req.body) + hashSecretKey);
+  
 
   if (sig != comparingSign) {
+    
+    console.log("return 3");
     return 3;
   }
 
   if (!req.body.account_number) {
+    console.log("return 4");
     return 4;
   }
-  hashSecretKey = config.auth.secret;
-   sig = md5(partnerCode + ts + JSON.stringify(testbody) + hashSecretKey);
-  console.log(ts);
-  console.log(partnerCode)
-  console.log(sig);
+  // hashSecretKey = md5(config.auth.secret);
+  //  sig = md5(partnerCode + ts + JSON.stringify(testbody) + hashSecretKey);
 };
 router.get("/partner", async (req, res) => {
   var con = confirm(req);
-  if (con == 1) {
+  if (con == 1) {   //time #
     return res.status(400).send({
       message: "The request was out of date.", // quá hạn
     });
   }
 
-  if (con == 2) {
+  if (con == 2) {   //partnerCode #
     return res.status(400).send({
       message: "You are not one of our partners.",
     });
   }
 
-  if (con == 3) {
+  if (con == 3) {   //sig #
     return res.status(400).send({
       message: "The file was changed by strangers.",
     });

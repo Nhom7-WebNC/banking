@@ -3,7 +3,6 @@ var router = express.Router();
 const moment = require("moment");
 const config = require("../config/default.json");
 
-
 const userModel = require("../models/userModel");
 
 /* GET users listing. */
@@ -13,12 +12,13 @@ router.get('/', (req, res) => {
 
 
 router.post("/add", async (req, res) => {
-  
+  console.log(req.body);
   try {
     const result = await userModel.add(req.body);
     const ret = {
-      id: result.insertId,
+      // id: result.insertId,
       ...req.body,
+      created_at : new Date()
     };
 
     delete ret.password;

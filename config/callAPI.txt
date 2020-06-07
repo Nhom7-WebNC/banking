@@ -1,0 +1,13 @@
+http://localhost:3000/api/users/add
+{
+    "username": "phongcoi696",
+    "name": "Phongle",
+    "phone": 232323,
+    "email": "phongcoi696@gmail.com",
+    "birthday": "2015-05-23",
+    "address": "123 Luy ban bich phuong hoa thanh quan tan phu",
+    "gender": "Nam",
+    "role_name": "admin",
+    "personal_number": "123456789",
+    "created_at": "2020-06-07T02:33:09.563Z"
+}
