@@ -79,7 +79,7 @@ router.get("/partner/transfer", async (req, res) => {
   // const myKeyPrivate = new NodeRSA(config.auth.privateKey);
   // const data = req.body.account_num + ', ' + req.body.money + ', ' + req.body.currentTime;
   const { ts, bank_code, sig } = req.headers;
-  const hashString = hash.MD5(ts + bank_code + sig);
+  const hashString = hash.MD5(ts + JSON.stringify(req.body) + sig);
   var veri = keyPublic.verify(hashString, sig, "hex", "hex");
   // (xem lai source encoding: (base64/utf8))
   // source encoding cua ham veri() phu thuoc vao ham sign()
