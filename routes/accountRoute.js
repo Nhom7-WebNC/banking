@@ -66,7 +66,7 @@ const confirm = (req) => {
     return 3;
   }
 
-  if (!req.body.account_number) {
+  if (!req.body.transferer) {
     console.log("return 4");
     return 4;
   }
@@ -113,7 +113,10 @@ router.post("/partner/transfer", async (req, res) => {
   var veri = keyPublic.verify(hashString, sig, "hex", "hex");
   // (xem lai source encoding: (base64/utf8))
   // source encoding cua ham veri() phu thuoc vao ham sign()
-  const currentTime = moment.valueOf();
+
+  const currentTime = moment().valueOf();
+
+  console.log("time", currentTime, "   sig", hashString);
   if (currentTime - ts > config.auth.expireTime) {
     console.log("return 1");
     return 1;
@@ -130,7 +133,7 @@ router.post("/partner/transfer", async (req, res) => {
   //   return 3;
   // }
 
-  if (!req.body.account_number) {
+  if (!req.body.transferer) {
     console.log("return 4");
     return 4;
   }
