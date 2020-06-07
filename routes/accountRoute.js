@@ -43,7 +43,7 @@ const confirm = (req) => {
   // const partnerCode = req.headers.partnerCode;
   const partnerCode = req.get("partnerCode");
   const sig = req.headers.sig;
-  const hashSecretKey =config.auth.secretPartnerRSA;
+  const secret =req.headers.secret;
   const currentTime = moment().valueOf();
 
   console.log(config.auth.partnerRSA);
@@ -64,7 +64,7 @@ const confirm = (req) => {
   }
 
 
-  const comparingSign = hash.MD5(ts + JSON.stringify(req.body) + hashSecretKey);
+  const comparingSign = hash.MD5(ts + JSON.stringify(req.body) + secret);
   
 
   if (sig != comparingSign) {
