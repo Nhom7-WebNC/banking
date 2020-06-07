@@ -73,8 +73,37 @@ const confirm = (req) => {
   // hashSecretKey = md5(config.auth.secret);
   //  sig = md5(bank_code + ts + JSON.stringify(testbody) + hashSecretKey);
 };
+router.get("/", async function (req, res) {
+  accountModel.updateCheckingMoney(3000001, 1234);
+  res.json("Welcome to userRoute Sucess");
+});
+router.post("/transfer", async function (req, res) {
+  const privateKeyArmored = fs.readFileSync("my_rsa_private.key", "utf8");
 
-router.get("/partner/transfer", async (req, res) => {
+  const myKeyPrivate = new NodeRSA().importKey(privateKeyArmored);
+
+  const body = req.body;
+
+  const { ts, bank_code, sig } = req.headers;
+
+  const headers = { ts, bank_code, sig };
+  const hashString = hash.MD5(bank_code + ts + JSON.stringify(req.body) + config.auth.secretPartnerRSA);
+  // const hashString = hash.MD5(config.auth.secretPartnerRSA);
+  var mySign = myKeyPrivate.sign(hashString, "hex", "hex");
+
+  console.log("ts", moment().valueOf());
+  console.log("hashString", mySign);
+
+  superagent
+    .post(`${config.auth.apiRoot}/money-transfer`)
+    .send(body)
+    .set(headers)
+    .end((err, result) => {
+      res.status(200).json(result.text);
+    });
+});
+
+router.post("/partner/transfer", async (req, res) => {
   const keyPublic = new NodeRSA(process.partner.publicKeyRSA);
   // const myKeyPrivate = new NodeRSA(config.auth.privateKey);
   // const data = req.body.account_num + ', ' + req.body.money + ', ' + req.body.currentTime;
@@ -84,11 +113,11 @@ router.get("/partner/transfer", async (req, res) => {
   var veri = keyPublic.verify(hashString, sig, "hex", "hex");
   // (xem lai source encoding: (base64/utf8))
   // source encoding cua ham veri() phu thuoc vao ham sign()
-
-  // if (currentTime - ts > config.auth.expireTime) {
-  //   console.log("return 1");
-  //   return 1;
-  // }
+  const currentTime = moment.valueOf();
+  if (currentTime - ts > config.auth.expireTime) {
+    console.log("return 1");
+    return 1;
+  }
 
   if (bank_code != config.auth.partnerRSA && bank_code != config.auth.partnerPGP) {
     console.log("return 2");
@@ -110,14 +139,32 @@ router.get("/partner/transfer", async (req, res) => {
     return res.status(400).send({
       message: "Wrong sign.",
     });
-  } else {
-    return res.status(200).json({
-      message: "Veri success",
-    });
   }
 
+  switch (bank_code) {
+    case "TUB":
+      const { content, amount, transferer, receiver, payFee } = req.body;
+
+      if (accountModel.findByCheckingAccountNumber(receiver)) {
+        accountModel.updateCheckingMoney(receiver, amount);
+      } else {
+        console.log("dont have this account", receiver);
+      }
+
+    case "ABC":
+  }
+
+  return res.status(200).json({
+    message: "Veri success",
+  });
+
+  // try{
+
+  // }catch(){
+
+  // }
   // try {
-  //   const rows_id = await accountModel.singleByNumber(req.body.account_number);
+  //   const rows_id = await accountModel(req.body.account_number);
   //   const idFind = rows_id[0].user_id;
   //   const rows = await userModel.singleById(idFind);
   //   // console.log("12345");
@@ -256,14 +303,13 @@ router.get("/bank-detail", async (req, res) => {
     .send(body)
     .set(headers)
     .end((err, result) => {
-      res
-        .status(200)
-        .json({ account_number: req.body.account_number, name: JSON.parse(result.res.text).name });
+      res.status(200).json({ account_number: req.body.account_number, name: JSON.parse(result.res.text).name });
     });
 });
 // truy vấn thông tin tài khoản
 
 // nộp tiền vào tài khoản
+
 router.post("/partner/recharge", async function (req, res) {
   const bank_code = req.get("bank_code");
   const signature = req.get("signature"); // sig hay sign ?

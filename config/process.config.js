@@ -1,8 +1,7 @@
 module.exports = {
-  ourkey: {
+  mine: {
     passphare: "1612500",
-    privateKeyRSA: `
-    -----BEGIN RSA PRIVATE KEY-----
+    privateKeyRSA: `-----BEGIN RSA PRIVATE KEY-----
     MIICWgIBAAKBgFjMQLZZ3gJTfSCDn5aGEzDQ/xNASryEbqtsmdDrJRAUMv9blj1d
     5rcAcGrRCdK6VvefzKhDekhwIKiZVcmJowpcXPhGn5d6dhUfi34uu+IKiGvQW05x
     DXN/bjE6BJRASZI6iGP45W0VyvArlZ+6NYRkUXfLB55o2YJAm/zfgonlAgMBAAEC
@@ -16,8 +15,7 @@ module.exports = {
     gY1pjTCI+azzk1fCl8Szcz2fuleifltjnM4mFsGdA8xPY5WBx1XSiJAy83HBuGlG
     mrF/yNP54irZWCqHAkAblwy1XcaGw1bRI24zgH5IfWRcgHHUpHuqod+CNRnCAN/z
     Rmkvx6B6otPhMYFTLpJCo2ZSwBBJNJbh90q4H7oe
-    -----END RSA PRIVATE KEY-----
-        `,
+    -----END RSA PRIVATE KEY-----`,
     publicKeyRSA: `
     -----BEGIN PUBLIC KEY-----
       MIGeMA0GCSqGSIb3DQEBAQUAA4GMADCBiAKBgFjMQLZZ3gJTfSCDn5aGEzDQ/xNA
