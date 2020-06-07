@@ -49,7 +49,7 @@ const confirm = (req) => {
   console.log(config.auth.partnerRSA);
   console.log('m partCode', partnerCode);
   console.log('m partCode2', JSON.stringify(req.body));
-  console.log('m partCode3', hashSecretKey);
+  console.log('m partCode3', secret);
   
 
 
