@@ -75,11 +75,13 @@ const confirm = (req) => {
 };
 
 router.get("/partner/transfer", async (req, res) => {
-  const signature = req.get("signature"); // sig
-  const keyPublic = new NodeRSA(process.partner.RSA_PUBLICKEY);
-
+  const signature = req.headers.signature; // sig
+  // const keyPublic = new NodeRSA(process.partner.RSA_PUBLICKEY);
+  const myKeyPrivate = new NodeRSA(config.auth.privateKey);
   // const data = req.body.account_num + ', ' + req.body.money + ', ' + req.body.currentTime;
-  var veri = keyPublic.verify(signature, "hex", "hex");
+  const { ts, bank_code, sig } = req.headers;
+  const hashString = hash.MD5(ts + bank_code + sig);
+  var veri = myKeyPrivate.verify(hashString, signature, "hex", "hex");
   // (xem lai source encoding: (base64/utf8))
   // source encoding cua ham veri() phu thuoc vao ham sign()
   var con = confirm(req);
