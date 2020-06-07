@@ -1,6 +1,7 @@
 var express = require("express");
 const moment = require("moment");
 const md5 = require("md5");
+const hash=require('object-hash');
 const NodeRSA = require("node-rsa");
 const openpgp = require("openpgp");
 const fs = require("fs").promises;
@@ -63,7 +64,7 @@ const confirm = (req) => {
   }
 
 
-  const comparingSign = md5(ts + JSON.stringify(req.body) + hashSecretKey);
+  const comparingSign = hash.MD5(ts + JSON.stringify(req.body) + hashSecretKey);
   
 
   if (sig != comparingSign) {
@@ -177,8 +178,8 @@ router.get("/bank-detail" , async(req,res ) => {
   console.log('body',body);
   const bank_code = config.auth.bankcode;
   const ts = Date.now();
-  const sig = md5(bank_code + ts.toString() + JSON.stringify(body) + config.auth.secretPartnerRSA);
-  
+  const sig = hash.MD5(bank_code + '9990037865399' + JSON.stringify(body) + config.auth.secretPartnerRSA);
+
   console.log("sig",sig);
   console.log("ts",ts);
   const headers = {bank_code,sig,ts};

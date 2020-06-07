@@ -21,6 +21,7 @@
     "mysql": "^2.18.1",
     "node-rsa": "^1.0.8",
     "nodemon": "^2.0.4",
+    "object-hash": "^2.0.3",
     "openpgp": "^4.10.4",
     "promisfy": "^1.2.0",
     "promisify": "0.0.3",
