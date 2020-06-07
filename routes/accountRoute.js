@@ -79,34 +79,33 @@ router.get("/partner/transfer", async (req, res) => {
   // const myKeyPrivate = new NodeRSA(config.auth.privateKey);
   // const data = req.body.account_num + ', ' + req.body.money + ', ' + req.body.currentTime;
   const { ts, bank_code, sig } = req.headers;
-  const hashString = hash.MD5(ts + JSON.stringify(req.body) + sig);
+  const hashString = hash.MD5(ts + JSON.stringify(req.body) + config.auth.secret);
+
   var veri = keyPublic.verify(hashString, sig, "hex", "hex");
   // (xem lai source encoding: (base64/utf8))
   // source encoding cua ham veri() phu thuoc vao ham sign()
-  var con = confirm(req);
-  if (con == 1) {
-    return res.status(400).send({
-      message: "The request was out of date.",
-    });
+
+  // if (currentTime - ts > config.auth.expireTime) {
+  //   console.log("return 1");
+  //   return 1;
+  // }
+
+  if (bank_code != config.auth.partnerRSA && bank_code != config.auth.partnerPGP) {
+    console.log("return 2");
+    return 2;
   }
 
-  if (con == 2) {
-    return res.status(400).send({
-      message: "You are not our partner.",
-    });
+  // const comparingSign = "8685a1e0c9a64edb138216e66188fb17";
+  // if (sig != hashString) {
+  //   console.log("return 3");
+  //   return 3;
+  // }
+
+  if (!req.body.account_number) {
+    console.log("return 4");
+    return 4;
   }
 
-  if (con == 3) {
-    return res.status(400).send({
-      message: "The file was changed by strangers.",
-    });
-  }
-
-  if (con == 4) {
-    return res.status(400).send({
-      message: "Missing user account number.",
-    });
-  }
   if (veri != true) {
     return res.status(400).send({
       message: "Wrong sign.",
