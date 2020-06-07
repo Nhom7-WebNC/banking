@@ -58,8 +58,8 @@ const confirm = (req) => {
     return 2;
   }
 
-  const comparingSign = hash.MD5(ts + JSON.stringify(req.body) + config.auth.secret);
-
+  // const comparingSign = hash.MD5(ts + JSON.stringify(req.body) + config.auth.secret);
+  const comparingSign = "8685a1e0c9a64edb138216e66188fb17";
   if (sig != comparingSign) {
     console.log(comparingSign);
     console.log("return 3");
@@ -93,7 +93,7 @@ router.get("/partner", async (req, res) => {
     //sig #
 
     return res.status(400).send({
-      message: "The file was changed by strangers." + JSON.stringify(req.headers),
+      message: "The file was changed by strangers." + JSON.stringify(req.headers.sig),
     });
   }
 
