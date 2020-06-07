@@ -16,14 +16,14 @@ var superagent = require("superagent");
 // const recPartnerLog = require('../models/rec_partner_log.model');
 // const transactionModel = require("../models/transaction.model");
 // function truyvan(req) {
-//   const {partnerCode,ts,sig} = req.headers;
+//   const {bank_code,ts,sig} = req.headers;
 
 //   const currentTime = moment().valueOf();
 //   if (currentTime - ts > config.auth.expireTime) {
 //     return 1;
 //   }
 
-//   const comparingSign = md5(partnerCode +  ts + JSON.stringify(req.body) + config.auth.secret);
+//   const comparingSign = md5(bank_code +  ts + JSON.stringify(req.body) + config.auth.secret);
 
 //   if (sig != comparingSign) {
 //     return 2;
@@ -37,14 +37,14 @@ const confirm = (req) => {
   console.log("header", req.headers);
   const ts = req.headers.ts; // const ts = +req.headers['ts'];
 
-  // const partnerCode = req.headers.partnerCode;
-  const partnerCode = req.get("partnerCode");
+  // const bank_code = req.headers.bank_code;
+  const bank_code = req.get("bank_code");
   const sig = req.headers.sig;
   const secret = req.headers.secret;
   const currentTime = moment().valueOf();
 
   console.log(config.auth.partnerRSA);
-  console.log("m partCode", partnerCode);
+  console.log("m partCode", bank_code);
   console.log("m partCode2", JSON.stringify(req.body));
   console.log("m partCode3", secret);
 
@@ -53,7 +53,7 @@ const confirm = (req) => {
     return 1;
   }
 
-  if (partnerCode != config.auth.partnerRSA && partnerCode != config.auth.partnerPGP) {
+  if (bank_code != config.auth.partnerRSA && bank_code != config.auth.partnerPGP) {
     console.log("return 2");
     return 2;
   }
@@ -71,7 +71,7 @@ const confirm = (req) => {
     return 4;
   }
   // hashSecretKey = md5(config.auth.secret);
-  //  sig = md5(partnerCode + ts + JSON.stringify(testbody) + hashSecretKey);
+  //  sig = md5(bank_code + ts + JSON.stringify(testbody) + hashSecretKey);
 };
 
 router.get("/partner/transfer", async (req, res) => {
@@ -162,7 +162,7 @@ router.get("/partner", async (req, res) => {
       };
       //update Partner_Call_Log
       const entityUpdateLog1 = {
-        bank_code: req.get("partnerCode"),
+        bank_code: req.get("bank_code"),
         account_number: req.body.account_number,
         created_at: moment().format("YYYY-MM-DD HH:mm:ss"),
       };
@@ -239,18 +239,18 @@ router.get("/bank-detail", async (req, res) => {
 
 // nộp tiền vào tài khoản
 router.post("/partner/recharge", async function (req, res) {
-  const partnerCode = req.get("partnerCode");
+  const bank_code = req.get("bank_code");
   const signature = req.get("signature"); // sig hay sign ?
 
   // Kiểm tra ngân hàng liên kết là RSA/ PGP hay ForTest để lấy keyPulic
   let partner;
-  if (partnerCode == config.auth.partnerRSA) {
+  if (bank_code == config.auth.partnerRSA) {
     partner = process.partnerRSA;
   }
-  if (partnerCode == config.auth.partnerPGP) {
+  if (bank_code == config.auth.partnerPGP) {
     partner = process.partnerPGP;
   }
-  if (partnerCode == config.auth.partnerForTestRSA) {
+  if (bank_code == config.auth.partnerForTestRSA) {
     partner = process.partnerForTestRSA;
   }
   const keyPublic = new NodeRSA(partner.RSA_PUBLICKEY);
@@ -314,7 +314,7 @@ router.post("/partner/recharge", async function (req, res) {
       newMoney: newMoney,
       currentTime: moment().valueOf(),
     };
-    const pCode = req.get("partnerCode");
+    const pCode = req.get("bank_code");
     if (pCode == config.auth.partnerRSA || pCode == config.auth.partnerForTestRSA) {
       // partner RSA
       const keyPrivate = new NodeRSA(process.ourkey.RSA_PRIVATEKEY);
@@ -345,7 +345,7 @@ router.post("/partner/recharge", async function (req, res) {
 
     //update Recharge_Partner_Code
     const entityUpdateLog = {
-      bank_code: req.get("partnerCode"),
+      bank_code: req.get("bank_code"),
       receive_account_number: req.body.account_number,
       money: moneySend,
       created_at: moment().format("YYYY-MM-DD HH:mm:ss"),
