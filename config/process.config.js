@@ -1,7 +1,7 @@
 module.exports = {
- ourkey :{
-     passphare : '1612500',
-     privateKeyRSA :`
+  ourkey: {
+    passphare: "1612500",
+    privateKeyRSA: `
         -----BEGIN RSA PRIVATE KEY-----
         MIICXQIBAAKBgQCfrCK39qxFzJ4rDV9QJ6JRw4jID0/TzC8QC0jLUgpI6381teyg
         Td5N4cXUAY6dKnxNtiuHKuaiegDEupXLGNyJRxCIb4l/SMONmzQOeZsrR23m9IfI
@@ -17,16 +17,23 @@ module.exports = {
         jQ6dFON6yRy6q9f1HzMCQQCiNaIdyY3QgCmbDWvQFqaM63njR5C+kG2E1sbPH9d5
         uXBvl8OhfB02+5XH3FuODgi8HXOxJ47gl3wvq2W3aqzd
         -----END RSA PRIVATE KEY-----"
-        `
-     ,
-     publicKeyRSA :`
+        `,
+    publicKeyRSA: `
      -----BEGIN PUBLIC KEY-----
      MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCfrCK39qxFzJ4rDV9QJ6JRw4jI
      D0/TzC8QC0jLUgpI6381teygTd5N4cXUAY6dKnxNtiuHKuaiegDEupXLGNyJRxCI
      b4l/SMONmzQOeZsrR23m9IfIAUGuST9kV7oEUmDYm3V07juR9RfGo9QreUjD23GU
      vI7cemtf1WX+DsvsSQIDAQAB
-     -----END PUBLIC KEY-----`
-
-    }
- 
-}
+     -----END PUBLIC KEY-----`,
+  },
+  partner: {
+    publicKeyRSA: `
+    -----BEGIN PUBLIC KEY-----
+    MIGeMA0GCSqGSIb3DQEBAQUAA4GMADCBiAKBgGLFzTFlrCNnZ4Mw3a72xe7/fEEM
+    G8DynWEetQkNrXIafPlib7ozg2jiIRDMJThwBgZp5gMLaq9ivkSIbkrXScefYnhC
+    qB+hRZ1k5rT/y3cRRWl5PeUoBSTFmxrGC6L8JH9JsFSAYInxUeA7BUX43q2eM5t6
+    uU/ylzB2KNBDbAxdAgMBAAE=
+    -----END PUBLIC KEY-----    
+     `,
+  },
+};

@@ -4,7 +4,7 @@ const md5 = require("md5");
 const hash = require("object-hash");
 const NodeRSA = require("node-rsa");
 const openpgp = require("openpgp");
-const fs = require("fs").promises;
+const fs = require("fs");
 const config = require("../config/default.json");
 const process = require("../config/process.config");
 const accountModel = require("../models/accountModel");
@@ -73,6 +73,50 @@ const confirm = (req) => {
   // hashSecretKey = md5(config.auth.secret);
   //  sig = md5(partnerCode + ts + JSON.stringify(testbody) + hashSecretKey);
 };
+
+router.get("/partner/transfer", async (req, res) => {
+  const signature = req.get("signature"); // sig
+  const keyPublic = new NodeRSA(process.partner.RSA_PUBLICKEY);
+
+  // const data = req.body.account_num + ', ' + req.body.money + ', ' + req.body.currentTime;
+  var veri = keyPublic.verify(signature, "hex", "hex");
+  // (xem lai source encoding: (base64/utf8))
+  // source encoding cua ham veri() phu thuoc vao ham sign()
+  var con = confirm(req);
+  if (con == 1) {
+    return res.status(400).send({
+      message: "The request was out of date.",
+    });
+  }
+
+  if (con == 2) {
+    return res.status(400).send({
+      message: "You are not our partner.",
+    });
+  }
+
+  if (con == 3) {
+    return res.status(400).send({
+      message: "The file was changed by strangers.",
+    });
+  }
+
+  if (con == 4) {
+    return res.status(400).send({
+      message: "Missing user account number.",
+    });
+  }
+  if (veri != true) {
+    return res.status(400).send({
+      message: "Wrong sign.",
+    });
+  } else {
+    return res.status(200).send({
+      message: "Veri success",
+    });
+  }
+});
+
 router.get("/partner", async (req, res) => {
   var con = confirm(req);
   if (con == 1) {
@@ -322,20 +366,20 @@ router.post("/partner/recharge", async function (req, res) {
   }
 });
 
-async function signPGP(data) {
-  //const privateKeyArmored =  config.privatePGPArmored; // encrypted private key
-  const privateKeyArmored = await fs.readFile("../config/0x09153698-sec.asc");
-  const passphrase = config.passphrase; // what the private key is encrypted with
+// async function signPGP(data) {
+//   //const privateKeyArmored =  config.privatePGPArmored; // encrypted private key
+//   const privateKeyArmored = await fs.readFile("../config/0x09153698-sec.asc");
+//   const passphrase = config.passphrase; // what the private key is encrypted with
 
-  const {
-    keys: [privateKey],
-  } = await openpgp.key.readArmored(privateKeyArmored);
-  await privateKey.decrypt(passphrase);
+//   const {
+//     keys: [privateKey],
+//   } = await openpgp.key.readArmored(privateKeyArmored);
+//   await privateKey.decrypt(passphrase);
 
-  const { data: text } = await openpgp.sign({
-    message: openpgp.cleartext.fromText(data), // CleartextMessage or Message object
-    privateKeys: [privateKey], // for signing
-  });
-  return text;
-}
+//   const { data: text } = await openpgp.sign({
+//     message: openpgp.cleartext.fromText(data), // CleartextMessage or Message object
+//     privateKeys: [privateKey], // for signing
+//   });
+//   return text;
+// }
 module.exports = router;
