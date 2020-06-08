@@ -106,24 +106,24 @@ router.post("/transfer", async function (req, res) {
 router.post("/partner/transfer", async (req, res) => {
   //tạo key
   const { ts, bank_code, sig } = req.headers;
-  // const publicString = fs.readFileSync("partner_RSA_private.key", "utf8");
-  // const publicKey = new NodeRSA().importKey(publicString);
+  const private = fs.readFileSync("partner_RSA_private.key", "utf8");
+  const privateKey = new NodeRSA().importKey(private);
 
   const body = req.body;
-  // const ts2 = moment().valueOf();
-  // const hashString3 = hash.MD5(bank_code + ts + JSON.stringify(req.body) + config.auth.secret);
-  // const mySign = publicKey.sign(hashString3, "hex", "hex");
+  const ts2 = moment().valueOf();
+  const hashString3 = hash.MD5(bank_code + ts + JSON.stringify(req.body) + config.auth.secret);
+  const mySign = privateKey.sign(hashString3, "hex", "hex");
 
   // console.log(ts2);
   // console.log("hash", hashString3);
 
   //giãi key
 
-  const privateString = fs.readFileSync("partner_RSA_public.key", "utf8");
-  const privateKey = new NodeRSA().importKey(privateString);
+  const public = fs.readFileSync("partner_RSA_public.key", "utf8");
+  const publicKey = new NodeRSA().importKey(public);
   const hashString = hash.MD5(bank_code + ts + JSON.stringify(req.body) + config.auth.secret);
 
-  var veri = privateKey.verify(hashString, sig, "hex", "hex");
+  var veri = publicKey.verify(hashString, mySign, "hex", "hex");
 
   const currentTime = moment().valueOf();
 
