@@ -14,7 +14,6 @@ module.exports = {
     const account = await db.load(
       `select * from account where checking_account_number = ${checking_account_number}`
     );
-    console.log(account[0].checking_account_number);
 
     const amountNew = account[0].checking_account_amount + amount;
     console.log("account", amountNew);
