@@ -114,8 +114,8 @@ router.post("/partner/transfer", async (req, res) => {
   const hashString3 = hash.MD5(bank_code + ts + JSON.stringify(req.body) + config.auth.secret);
   const mySign = privateKey.sign(hashString3, "hex", "hex");
 
-  // console.log(ts2);
-  // console.log("hash", hashString3);
+  console.log(ts2);
+  console.log("hash", mySign);
 
   //giãi key
 
