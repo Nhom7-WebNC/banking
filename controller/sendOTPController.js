@@ -25,6 +25,7 @@ router.sendOTP = async function(req,res){
           subject: "PPNBank",
           text: "your code is "+random+". Don't share it; we won't call to ask for it."
       };
+      //
      await transporter.sendMail(mailOptions, (error, info) => {
           if (error) {
               return console.log(error);
