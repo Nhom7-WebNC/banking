@@ -20,6 +20,8 @@
     "morgan": "~1.9.1",
     "mysql": "^2.18.1",
     "node-rsa": "^1.0.8",
+    "nodejs-nodemailer-outlook": "^1.2.3",
+    "nodemailer": "^6.4.8",
     "nodemon": "^2.0.4",
     "object-hash": "^2.0.3",
     "openpgp": "^4.10.4",

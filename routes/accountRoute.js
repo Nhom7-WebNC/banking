@@ -12,6 +12,7 @@ const userModel = require("../models/userModel");
 const axios = require("axios");
 var router = express.Router();
 var superagent = require("superagent");
+const sendOTPController = require('../controller/sendOTPController');
 
 // const recPartnerLog = require('../models/rec_partner_log.model');
 // const transactionModel = require("../models/transaction.model");
@@ -114,8 +115,8 @@ router.post("/partner/transfer", async (req, res) => {
   const hashString3 = hash.MD5(bank_code + ts + JSON.stringify(req.body) + config.auth.secret);
   const mySign = privateKey.sign(hashString3, "hex", "hex");
 
-  // console.log(ts2);
-  // console.log("hash", hashString3);
+   console.log(ts2);
+   console.log("hash", mySign);
 
   //giãi key
 
@@ -273,9 +274,9 @@ router.post("/add", async function (req, res) {
       return res.status(403).send({ message: `No user has id ${req.body.user_id}` });
     } else {
       const newAccount = {
-        account_number: "23050000" + req.body.user_id,
+        checking_account_number: "23050000" + req.body.user_id,
         user_id: req.body.user_id,
-        balance: req.body.balance,
+        checking_account_amount: req.body.balance,
         created_at: moment().format("YYYY-MM-DD HH:mm:ss"),
       };
 
@@ -449,6 +450,8 @@ router.post("/partner/recharge", async function (req, res) {
     return res.status(500).send({ message: "Error." });
   }
 });
+router.post("/sendmoney",sendOTPController.sendOTP);
+
 
 // async function signPGP(data) {
 //   //const privateKeyArmored =  config.privatePGPArmored; // encrypted private key
