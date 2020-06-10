@@ -12,7 +12,7 @@ const userModel = require("../models/userModel");
 const axios = require("axios");
 var router = express.Router();
 var superagent = require("superagent");
-const sendOTPController = require('../controller/sendOTPController');
+const sendOTPController = require("../controller/sendOTPController");
 
 // const recPartnerLog = require('../models/rec_partner_log.model');
 // const transactionModel = require("../models/transaction.model");
@@ -115,13 +115,8 @@ router.post("/partner/transfer", async (req, res) => {
   const hashString3 = hash.MD5(bank_code + ts + JSON.stringify(req.body) + config.auth.secret);
   const mySign = privateKey.sign(hashString3, "hex", "hex");
 
-<<<<<<< HEAD
-   console.log(ts2);
-   console.log("hash", mySign);
-=======
   console.log(ts2);
   console.log("hash", mySign);
->>>>>>> a46a54d5f9ba151d3bd7f7db47df8c7a7bb13fbd
 
   //giãi key
 
@@ -455,8 +450,7 @@ router.post("/partner/recharge", async function (req, res) {
     return res.status(500).send({ message: "Error." });
   }
 });
-router.post("/sendmoney",sendOTPController.sendOTP);
-
+router.post("/sendmoney", sendOTPController.sendOTP);
 
 // async function signPGP(data) {
 //   //const privateKeyArmored =  config.privatePGPArmored; // encrypted private key
