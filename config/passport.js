@@ -158,7 +158,7 @@ module.exports = function (passport) {
           }
           if (!rows.length) {
             console.log("not user");
-            return done(null, false, { message: "No user found." }); // req.flash is the way to set flashdata using pool_querynect-flash
+            return done(null, false, { message: "No user found." }); // req.flash is the waysds to set flashdata using pool_querynect-flash
           }
           console.log("rows0");
           console.log(rows[0]);
