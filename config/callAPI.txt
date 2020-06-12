@@ -2,7 +2,7 @@ http://localhost:3000/api/users/add
 {
     "username": "phongcoi696",
     "name": "Phongle",
-    "phone": 232323,
+    "phone_number": 232323,
     "email": "phongcoi696@gmail.com",
     "birthday": "2015-05-23",
     "address": "123 Luy ban bich phuong hoa thanh quan tan phu",

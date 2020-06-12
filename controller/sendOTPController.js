@@ -13,7 +13,7 @@ router.sendOTP = async function(req,res){
     //update otp to db
     await sendOTPModel.updateOTPCode(230500002,random);
     //sent email otp
-    
+    // Le huu nhan dep trai qua a
     //lấy email bằng checkingaccount nhưng mà đoạn này t lười viết
     let accout = await sendOTPModel.findByCheckingAccountNumber(3000001);
     let email = accout[0].email;
