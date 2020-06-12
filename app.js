@@ -3,11 +3,13 @@ var express = require("express");
 var path = require("path");
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
+const passport = require("passport");
+var flash = require("connect-flash");
+const bodyParser = require("body-parser");
+var session = require("express-session");
 
-//ádnnasdnjasnj
+require("./config/passport")(passport);
 var app = express();
-
-// view engine setup
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
 
@@ -16,10 +18,18 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
-app.get("/", (req, res) => {
-  res.json("Welcome to TTS Banking RSA!\n #Update to Tuesday, 26/05/2020");
-});
+app.use(express.static(__dirname + "../public"));
 
+app.use(flash()); // use connect-flash for flash messages stored in session
+app.use(express.static("public"));
+app.use(session({ secret: "cats" }));
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(passport.initialize());
+app.use(passport.session());
+
+app.get("/", (req, res) => {
+  res.json("Phong Le 1206");
+});
 // app.use('/', indexRouter);
 // app.use('/users', usersRouter);
 
@@ -43,6 +53,14 @@ app.use(function (err, req, res, next) {
   res.status(err.status || 500);
   res.render("error");
 });
+
+app.use(
+  session({
+    secret: "work hard",
+    resave: true,
+    saveUninitialized: false,
+  })
+);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
