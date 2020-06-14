@@ -199,6 +199,7 @@ module.exports = {
         });
       } else {
         const ret = {
+          account: req.body.account_number,
           name: rows[0].name,
         };
         //update Partner_Call_Log
