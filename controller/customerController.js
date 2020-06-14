@@ -157,7 +157,7 @@ module.exports = {
       return res.status(500).send({ message: "Error." });
     }
   },
-  partner: async function (req, res) {
+  partnerBankDetail: async function (req, res) {
     var con = confirm(req);
     if (con == 1) {
       //time #
@@ -215,7 +215,7 @@ module.exports = {
       return res.status(500).send({ message: "Error." });
     }
   },
-  bankDetail: async function (req, res) {
+  myBankDetail: async function (req, res) {
     const body = req.body;
     console.log("body", body);
     const bank_code = config.auth.bankcode;
@@ -227,11 +227,14 @@ module.exports = {
     const headers = { bank_code, sig, ts };
     console.log("headers", headers);
     console.log("url", `${config.auth.apiRoot}/bank-detail`);
+    const name = accountModel.findById(body.account_number).name;
+
     superagent
       .get(`${config.auth.apiRoot}/bank-detail`)
       .send(body)
       .set(headers)
       .end((err, result) => {
+        console.log(result.res.text);
         res.status(200).json({ account_number: req.body.account_number, name: JSON.parse(result.res.text).name });
       });
   },

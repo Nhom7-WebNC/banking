@@ -28,7 +28,7 @@ router.post("/sendmoney", sendOTPController.sendOTP);
 router.post("/transfer", customerController.transfer);
 router.post("/receive", customerController.receive);
 router.post("/add", customerController.add);
-router.get("/partner", customerController.partner);
-router.get("/bank-detail", customerController.bankDetail);
+router.get("/TUBBankDetail", customerController.partnerBankDetail);
+router.get("/PPNBankDetail", customerController.myBankDetail);
 
 module.exports = router;
