@@ -10,6 +10,8 @@ const NodeRSA = require("node-rsa");
 var superagent = require("superagent");
 const hash = require("object-hash");
 const moment = require("moment");
+const fs = require("fs");
+
 const userModel = require("../models/userModel");
 const confirm = (req) => {
   console.log("header", req.headers);
@@ -79,6 +81,7 @@ module.exports = {
   },
   receive: async function (req, res) {
     const { ts, bank_code, sig } = req.headers;
+
     const private = fs.readFileSync("partner_RSA_private.key", "utf8");
     const privateKey = new NodeRSA().importKey(private);
     const body = req.body;
@@ -90,6 +93,10 @@ module.exports = {
     const hashString = hash.MD5(bank_code + ts + JSON.stringify(req.body) + config.auth.secret);
     var veri = publicKey.verify(hashString, mySign, "hex", "hex");
     const currentTime = moment().valueOf();
+
+    console.log("ts", ts2);
+    console.log("sig", hashString);
+
     if (currentTime - ts > config.auth.expireTime) {
       console.log("return 1");
       return 1;

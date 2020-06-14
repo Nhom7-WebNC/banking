@@ -1,3 +1,38 @@
+Header :
+ts , sig , bank_code
+bank_code = your_bank_code
+ts = moment().valueOf();
+sig = hash.MD5 (bank_code + ts + JSON.stringify(req.body) + secret );
+my_secret = "phongledeptrai"
+my_bankcode = "PPN:
+
+Body :
+Lấy thông tin bank account:   /accounts/PPNBankDetail
+{
+    account_number: string
+}
+Gửi (nạp) tiền:   /accounts/receive
+{
+amount: number,
+content: String,
+transferer: <bank_account>,
+receiver: <bank_account>,
+payFee: ‘transferer’ | ‘receiver’
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 POST : http://localhost:3000/api/users/signup
 {
     "username": "phonglee",
