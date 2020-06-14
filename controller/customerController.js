@@ -61,15 +61,15 @@ module.exports = {
 
     const body = req.body;
 
-    const { ts, bank_code, sig } = req.headers;
+    const bank_code = "PPNBank";
+    const ts = Date.now();
 
-    const headers = { ts, bank_code, sig };
-    const hashString = hash.MD5(bank_code + ts + JSON.stringify(req.body) + config.auth.secretPartnerRSA);
+    const hashString = hash.MD5(
+      bank_code + ts.toString() + JSON.stringify(req.body) + config.auth.secretPartnerRSA
+    );
     // const hashString = hash.MD5(config.auth.secretPartnerRSA);
-    var mySign = myKeyPrivate.sign(hashString, "hex", "hex");
-
-    console.log("ts", moment().valueOf());
-    console.log("hashString", mySign);
+    var sig = myKeyPrivate.sign(hashString, "hex", "hex");
+    const headers = { ts, bank_code, sig };
 
     superagent
       .post(`${config.auth.apiRoot}/money-transfer`)
