@@ -9,7 +9,8 @@ const process = require("../config/process.config");
 const NodeRSA = require("node-rsa");
 var superagent = require("superagent");
 const hash = require("object-hash");
-
+const moment = require("moment");
+const userModel = require("../models/userModel");
 const confirm = (req) => {
   console.log("header", req.headers);
   const ts = req.headers.ts; // const ts = +req.headers['ts'];
@@ -19,7 +20,7 @@ const confirm = (req) => {
   const sig = req.headers.sig;
   const secret = req.headers.secret;
   const currentTime = moment().valueOf();
-
+  console.log(currentTime);
   console.log(config.auth.partnerRSA);
   console.log("m partCode", bank_code);
   console.log("m partCode2", JSON.stringify(req.body));
@@ -43,10 +44,10 @@ const confirm = (req) => {
     return 3;
   }
 
-  if (!req.body.transferer) {
-    console.log("return 4");
-    return 4;
-  }
+  // if (!req.body.transferer) {
+  //   console.log("return 4");
+  //   return 4;
+  // }
   // hashSecretKey = md5(config.auth.secret);
   //  sig = md5(bank_code + ts + JSON.stringify(testbody) + hashSecretKey);
 };
@@ -157,7 +158,7 @@ module.exports = {
       return res.status(500).send({ message: "Error." });
     }
   },
-  partnerBankDetail: async function (req, res) {
+  myBankDetail: async function (req, res) {
     var con = confirm(req);
     if (con == 1) {
       //time #
@@ -180,14 +181,8 @@ module.exports = {
       });
     }
 
-    if (con == 4) {
-      return res.status(400).send({
-        message: "Missing account_number.",
-      });
-    }
-
     try {
-      const rows_id = await accountModel.findByAccountNumber(req.body.account_number);
+      const rows_id = await accountModel.findByCheckingAccountNumber(req.body.account_number);
       const idFind = rows_id[0].user_id;
       const rows = await userModel.findById(idFind);
       // console.log("12345");
@@ -215,7 +210,7 @@ module.exports = {
       return res.status(500).send({ message: "Error." });
     }
   },
-  myBankDetail: async function (req, res) {
+  partnerBankDetail: async function (req, res) {
     const body = req.body;
     console.log("body", body);
     const bank_code = config.auth.bankcode;

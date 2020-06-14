@@ -11,7 +11,7 @@ module.exports = {
   getAllUser: () => db.load(`select * from user`),
   findByUserName: (userName) => db.load(`select * from user where username = '${userName}'`),
   findById: (id) =>
-    db.load(`select username, name, personal_number, birthday, phone, address, email , gender
+    db.load(`select username, name, personal_number, birthday, phone_number, address, email , gender
                                from user where id = '${id}'`),
 };
 //ssd*dd
