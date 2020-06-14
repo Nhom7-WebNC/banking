@@ -135,7 +135,7 @@ module.exports = {
     }
 
     return res.status(200).json({
-      message: "Veri success",
+      message: "Chuyển tiền thành công",
     });
   },
   add: async function (req, res) {
