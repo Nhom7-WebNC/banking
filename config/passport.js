@@ -61,12 +61,7 @@ module.exports = function (passport) {
         let personal_number = req.body.personal_number;
         let role_name = req.body.role_name;
         let birthday = req.body.birthday;
-        let create_at = moment().format("YYYY-MM-DD");
-        let option = {
-          min: 100000,
-          max: 999999,
-          integer: true,
-        };
+        let created_at = moment().format("YYYY-MM-DD");
         const key = rd.generate();
         console.log(username + password + phone_number + address + name);
         // find a user whose email is the same as the forms email
@@ -88,8 +83,6 @@ module.exports = function (passport) {
               // create the user
               bcrypt.genSalt(10, async (err, salt) => {
                 await bcrypt.hash(password, salt, function (err, hash) {
-                  console.log(hash + "...");
-                  console.log(password + ".....");
                   passwordHash = hash;
 
                   var newUserMysql = {
@@ -98,8 +91,14 @@ module.exports = function (passport) {
                     email: email,
                     username: username,
                     password: passwordHash,
+                    gender: gender,
+                    personal_number: personal_number,
+                    role_name: role_name,
+                    birthday: birthday,
+                    address: address,
                   };
                   userModel.add(newUserMysql);
+                  return done(null, newUserMysql);
                 });
               });
 
@@ -160,19 +159,17 @@ module.exports = function (passport) {
             console.log("not user");
             return done(null, false, { message: "No user found." }); // req.flash is the waysds to set flashdata using pool_querynect-flash
           }
-          console.log("rows0");
-          console.log(rows[0]);
           bcrypt.compare(password, rows[0].password, function (err, res) {
             if (err) {
               // handle error
               console.log("error");
             }
             if (res) {
-              console.log("chuan");
+              console.log("dang nhap thanh cong");
               // Send JWT
             } else {
               // response is OutgoingMessage object that server response http request
-              console.log("els");
+              console.log("sai mat khau");
             }
           });
 

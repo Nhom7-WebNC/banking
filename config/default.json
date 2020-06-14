@@ -10,15 +10,9 @@
   "auth": {
     "bankcode": "PPNBank",
     "secret": "phongledeptrai",
-
     "partnerRSA": "TUB",
     "secretPartnerRSA": "hiphopneverdie",
     "apiRoot": "https://great-banking.herokuapp.com/api",
-
-    "partnerPGP": "20PGP",
-    "secretPartnerPGP": "InfymtPGP",
-    "partnerForTestRSA": "VCB",
-    "secretPartnerForTestRSA": "Vietcombank",
     "expiresIn": "10m",
     "expireTime": 600000,
     "refreshTokenSz": 80

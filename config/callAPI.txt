@@ -1,6 +1,7 @@
-http://localhost:3000/api/users/add
+POST : http://localhost:3000/api/users/signup
 {
-    "username": "phongcoi696",
+    "username": "phonglee",
+    "password" : "123456",
     "name": "Phongle",
     "phone_number": 232323,
     "email": "phongcoi696@gmail.com",
@@ -8,6 +9,13 @@ http://localhost:3000/api/users/add
     "address": "123 Luy ban bich phuong hoa thanh quan tan phu",
     "gender": "Nam",
     "role_name": "admin",
-    "personal_number": "123456789",
-    "created_at": "2020-06-07T02:33:09.563Z"
+    "personal_number": "123456789"
 }
+
+POST : http://localhost:3000/api/users/login
+{
+    "username": "phonglee",
+    "password" : "123456"
+}
+
+
