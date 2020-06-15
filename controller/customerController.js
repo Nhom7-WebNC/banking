@@ -12,6 +12,7 @@ const hash = require("object-hash");
 const moment = require("moment");
 const fs = require("fs");
 
+
 const userModel = require("../models/userModel");
 const confirm = (req) => {
   console.log("header", req.headers);
@@ -59,7 +60,7 @@ module.exports = {
 
     const myKeyPrivate = new NodeRSA().importKey(privateKeyArmored);
 
-    const body = req.body;
+    let body = req.body;
 
     const bank_code = "PPNBank";
     const ts = Date.now();
@@ -76,6 +77,20 @@ module.exports = {
       .send(body)
       .set(headers)
       .end((err, result) => {
+
+        //history log 
+        let transactionHistory = {
+          sender_account_number: body.transferer,
+          sender_bank_code: bank_code,
+          receiver_account_number: body.receiver,
+          //don't have bankcode of receiver 
+          receiver_bank_code:	"",
+          amount: body.amount,
+          transaction_fee: 5000,
+          log: body.transferer +" đã gửi "+ body.amount+" cho "+body.receiver,
+          message: body.content
+        }
+        transactionModel.add(transactionHistory);
         res.status(200).json(result.text);
       });
   },
@@ -93,6 +108,8 @@ module.exports = {
     const hashString = hash.MD5(bank_code + ts + JSON.stringify(req.body) + config.auth.secret);
     var veri = publicKey.verify(hashString, mySign, "hex", "hex");
     const currentTime = moment().valueOf();
+
+    
 
     console.log("ts", ts2);
     console.log("sig", hashString);
@@ -123,7 +140,22 @@ module.exports = {
         const { content, amount, transferer, receiver, payFee } = req.body;
 
         if (accountModel.findByCheckingAccountNumber(receiver)) {
+          
           accountModel.updateCheckingMoney(receiver, amount);
+          //log
+          let transactionHistory = {
+            sender_account_number: body.transferer,
+            sender_bank_code: bank_code,
+            receiver_account_number: body.receiver,
+            //don't have bankcode of receiver 
+            receiver_bank_code:	"",
+            amount: body.amount,
+            transaction_fee: 5000,
+            log: body.transferer +" đã gửi "+ body.amount+" cho "+body.receiver,
+            message: body.content
+          }
+          transactionModel.add(transactionHistory);
+
         } else {
           res.status(200).json({
             message: "Veri successont have this account",
