@@ -9,6 +9,7 @@ var superagent = require("superagent");
 const hash = require("object-hash");
 const moment = require("moment");
 const fs = require("fs");
+var row={};
 
 const userModel = require("../models/userModel");
 const confirm = (req) => {
@@ -68,27 +69,43 @@ module.exports = {
     // const hashString = hash.MD5(config.auth.secretPartnerRSA);
     var sig = myKeyPrivate.sign(hashString, "hex", "hex");
     const headers = { ts, bank_code, sig };
+    const { content, amount, transferer, receiver, payFee } = req.body;
+    await accountModel.findOne('checking_account_number', transferer).then((rows) => {
+      row = rows[0];
+      console.log(row.checking_account_amount); 
+    })
+    if ( row.checking_account_amount > amount) {
+      superagent
+        .post(`${config.auth.apiRoot}/money-transfer`)
+        .send(body)
+        .set(headers)
+        .end((err, result) => {
 
-    superagent
-      .post(`${config.auth.apiRoot}/money-transfer`)
-      .send(body)
-      .set(headers)
-      .end((err, result) => {
-        //history log
-        let transactionHistory = {
-          sender_account_number: body.transferer,
-          sender_bank_code: bank_code,
-          receiver_account_number: body.receiver,
-          //don't have bankcode of receiver
-          receiver_bank_code: "",
-          amount: body.amount,
-          transaction_fee: 5000,
-          log: body.transferer + " đã gửi " + body.amount + " cho " + body.receiver,
-          message: body.content,
-        };
-        transactionModel.add(transactionHistory);
-        res.status(200).json(result.text);
+          accountModel.updateCheckingMoney(transferer, 0 - amount);
+          //log
+          //history log
+          let transactionHistory = {
+            sender_account_number: body.transferer,
+            sender_bank_code: bank_code,
+            receiver_account_number: body.receiver,
+            //don't have bankcode of receiver
+            receiver_bank_code: "",
+            amount: body.amount,
+            transaction_fee: 5000,
+            log: body.transferer + " đã gửi " + body.amount + " cho " + body.receiver,
+            message: body.content,
+          };
+          transactionModel.add(transactionHistory);
+          res.status(200).json(result.text);
+
+
+        });
+    }else {
+      res.status(400).json({
+        message: "Tài khoản không đủ tiền",
+        receiver,
       });
+    }
   },
   receive: async function (req, res) {
     const { ts, bank_code, sig } = req.headers;
@@ -133,7 +150,8 @@ module.exports = {
       case "TUB":
         const { content, amount, transferer, receiver, payFee } = req.body;
 
-        if (accountModel.findOne("checking_account_number", receiver)) {
+        if (accountModel.findOne('checking_account_number', receiver)) {
+
           accountModel.updateCheckingMoney(receiver, amount);
           //log
           let transactionHistory = {
@@ -148,8 +166,9 @@ module.exports = {
             message: body.content,
           };
           transactionModel.add(transactionHistory);
+
         } else {
-          res.status(200).json({
+          res.status(400).json({
             message: "Veri successont have this account",
             receiver,
           });
