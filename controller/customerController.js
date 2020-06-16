@@ -1,5 +1,3 @@
-var express = require("express");
-var router = express.Router();
 const accountModel = require("../models/accountModel");
 const otpModel = require("../models/otpModel");
 const transactionModel = require("../models/transactionModel");
@@ -11,7 +9,6 @@ var superagent = require("superagent");
 const hash = require("object-hash");
 const moment = require("moment");
 const fs = require("fs");
-
 
 const userModel = require("../models/userModel");
 const confirm = (req) => {
@@ -77,19 +74,18 @@ module.exports = {
       .send(body)
       .set(headers)
       .end((err, result) => {
-
-        //history log 
+        //history log
         let transactionHistory = {
           sender_account_number: body.transferer,
           sender_bank_code: bank_code,
           receiver_account_number: body.receiver,
-          //don't have bankcode of receiver 
-          receiver_bank_code:	"",
+          //don't have bankcode of receiver
+          receiver_bank_code: "",
           amount: body.amount,
           transaction_fee: 5000,
-          log: body.transferer +" đã gửi "+ body.amount+" cho "+body.receiver,
-          message: body.content
-        }
+          log: body.transferer + " đã gửi " + body.amount + " cho " + body.receiver,
+          message: body.content,
+        };
         transactionModel.add(transactionHistory);
         res.status(200).json(result.text);
       });
@@ -108,8 +104,6 @@ module.exports = {
     const hashString = hash.MD5(bank_code + ts + JSON.stringify(req.body) + config.auth.secret);
     var veri = publicKey.verify(hashString, mySign, "hex", "hex");
     const currentTime = moment().valueOf();
-
-    
 
     console.log("ts", ts2);
     console.log("sig", hashString);
@@ -139,23 +133,21 @@ module.exports = {
       case "TUB":
         const { content, amount, transferer, receiver, payFee } = req.body;
 
-        if (accountModel.findByCheckingAccountNumber(receiver)) {
-          
+        if (accountModel.findOne("checking_account_number", receiver)) {
           accountModel.updateCheckingMoney(receiver, amount);
           //log
           let transactionHistory = {
             sender_account_number: body.transferer,
             sender_bank_code: bank_code,
             receiver_account_number: body.receiver,
-            //don't have bankcode of receiver 
-            receiver_bank_code:	"",
+            //don't have bankcode of receiver
+            receiver_bank_code: "",
             amount: body.amount,
             transaction_fee: 5000,
-            log: body.transferer +" đã gửi "+ body.amount+" cho "+body.receiver,
-            message: body.content
-          }
+            log: body.transferer + " đã gửi " + body.amount + " cho " + body.receiver,
+            message: body.content,
+          };
           transactionModel.add(transactionHistory);
-
         } else {
           res.status(200).json({
             message: "Veri successont have this account",
@@ -172,7 +164,7 @@ module.exports = {
   },
   add: async function (req, res) {
     try {
-      const rows = await userModel.findById(req.body.user_id);
+      const rows = await userModel.findOne("id", req.body.user_id);
 
       if (rows.length == 0) {
         return res.status(403).send({ message: `No user has id ${req.body.user_id}` });
@@ -221,9 +213,9 @@ module.exports = {
     }
 
     try {
-      const rows_id = await accountModel.findByCheckingAccountNumber(req.body.account_number);
+      const rows_id = await accountModel.findOne("checking_account_number", req.body.account_number);
       const idFind = rows_id[0].user_id;
-      const rows = await userModel.findById(idFind);
+      const rows = await userModel.findOne("id", idFind);
       // console.log("12345");
       if (rows.length == 0) {
         return res.status(403).send({
@@ -262,7 +254,6 @@ module.exports = {
     const headers = { bank_code, sig, ts };
     console.log("headers", headers);
     console.log("url", `${config.auth.apiRoot}/bank-detail`);
-    const name = accountModel.findById(body.account_number).name;
 
     superagent
       .get(`${config.auth.apiRoot}/bank-detail`)

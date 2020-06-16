@@ -1,0 +1,13 @@
+GET http://localhost:3000/posts
+Authorization:Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiS3lsZTMiLCJpYXQiOjE1OTIyODU3MjZ9.PiUdtsUquFhv7I6vYK0mXEdVs_1bos4R3BXIKaXN0Mo
+
+
+###
+
+
+POST http://localhost:3000/api/users/login
+Content-Type: application/json
+{
+    "username" : "phongdeptraicuto",
+    "password" : "123456"
+}
