@@ -15,6 +15,7 @@ const sendOTPController = require("../controller/sendOTPController");
 const customerController = require("../controller/customerController");
 const loginController = require("../controller/loginController");
 const jwt = require("jsonwebtoken");
+const employeeController = require("../controller/employeeController");
 
 router.get("/", authenticateToken, async function (req, res) {
   accountModel.updateCheckingMoney(3000001, 1234);
@@ -28,6 +29,7 @@ router.get("/accounts/TUBBankDetail", customerController.partnerBankDetail);
 router.get("/accounts/PPNBankDetail", customerController.myBankDetail);
 router.post("/login", loginController.login);
 router.post("/signup", loginController.signup);
+router.post("/employee/create-account", employeeController.createAccount);
 
 function authenticateToken(req, res, next) {
   const authHeader = req.headers["authorization"];
