@@ -27,6 +27,7 @@ router.createAccount = async function(req,res,next){
               personal_number: req.body.personal_number,
             };
             userModel.add(newUserMysql);
+            
             return res.status(200).json("dang ki thanh cong" + { newUserMysql });
           });
         });
