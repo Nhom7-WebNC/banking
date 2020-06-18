@@ -1,10 +1,10 @@
 const accountModel = require("../models/accountModel");
 const userModel = require("../models/userModel");
-const express = require('express');
+const express = require("express");
 const bcrypt = require("bcryptjs");
 var router = express.Router();
-
-router.createAccount = async function(req,res,next){
+module.exports = {
+  createAccount: async function (req, res, next) {
     const password = req.body.password;
     const user = userModel.findOne("username", req.body.username).then((rows) => {
       if (rows.length > 0) {
@@ -15,7 +15,7 @@ router.createAccount = async function(req,res,next){
             passwordHash = hash;
 
             const newUserMysql = {
-            username: req.body.username,
+              username: req.body.username,
               password: passwordHash,
               name: req.body.name,
               phone_number: req.body.phone_number,
@@ -27,12 +27,11 @@ router.createAccount = async function(req,res,next){
               personal_number: req.body.personal_number,
             };
             userModel.add(newUserMysql);
-            
+
             return res.status(200).json("dang ki thanh cong" + { newUserMysql });
           });
         });
       }
     });
-    
-}
-module.exports = router;
+  },
+};
