@@ -11,6 +11,7 @@ getRandomInt = function (min, max) {
 module.exports = {
   sendOTP: async function (req, res) {
     random = getRandomInt(1000, 9999);
+    account_number;
     //update otp to db
     await sendOTPModel.updateOTPCode(230500002, random);
     //sent email otp

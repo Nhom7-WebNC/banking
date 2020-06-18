@@ -21,7 +21,7 @@ router.get("/", authenticateToken, async function (req, res) {
   accountModel.updateCheckingMoney(3000001, 1234);
   res.json("Welcome to userRoute Sucess");
 });
-router.post("/customers/sendmoney", customer, sendOTPController.sendOTP);
+router.post("/customers/sendOTP", customer, sendOTPController.sendOTP);
 router.post("/customers/transfer", customer, customerController.transfer);
 router.get("/customers/TUBBankDetail", customer, customerController.partnerBankDetail);
 router.post("/accounts/receive", customerController.receive);
