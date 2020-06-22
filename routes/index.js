@@ -21,15 +21,67 @@ router.get("/", authenticateToken, async function (req, res) {
   accountModel.updateCheckingMoney(3000001, 1234);
   res.json("Welcome to userRoute Sucess");
 });
-router.post("/sendmoney", authenticateToken, sendOTPController.sendOTP);
-router.post("/transfer", customerController.transfer);
-router.post("/receive", customerController.receive);
-router.post("/add", customer, customerController.add);
-router.get("/accounts/TUBBankDetail", customerController.partnerBankDetail);
+router.post("/customers/sendOTP", customer, sendOTPController.sendOTP);
+router.post("/customers/transfer", customer, customerController.transfer);
+router.get("/customers/TUBBankDetail", customer, customerController.partnerBankDetail);
+router.post("/accounts/receive", customerController.receive);
 router.get("/accounts/PPNBankDetail", customerController.myBankDetail);
 router.post("/login", loginController.login);
 router.post("/signup", loginController.signup);
-router.post("/employee/create-account", employeeController.createAccount);
+router.post("/employee/create-account", employee, employeeController.createAccount);
+
+function customer(req, res, next) {
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1];
+  if (token == null) return res.sendStatus(403);
+  console.log(token);
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
+    if (err) return res.sendStatus(403);
+
+    if (user.role_name == "customer") {
+      req.user = user;
+      next();
+    } else {
+      res.sendStatus(403);
+    }
+  });
+  return;
+}
+
+function employee(req, res, next) {
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1];
+  if (token == null) return res.sendStatus(403);
+  console.log(token);
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
+    if (err) return res.sendStatus(403);
+
+    if (user.role_name == "employee") {
+      req.user = user;
+      next();
+    } else {
+      res.sendStatus(403);
+    }
+  });
+  return;
+}
+function admin(req, res, next) {
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1];
+  if (token == null) return res.sendStatus(403);
+  console.log(token);
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
+    if (err) return res.sendStatus(403);
+
+    if (user.role_name == "admin") {
+      req.user = user;
+      next();
+    } else {
+      res.sendStatus(403);
+    }
+  });
+  return;
+}
 
 function authenticateToken(req, res, next) {
   const authHeader = req.headers["authorization"];
@@ -41,52 +93,6 @@ function authenticateToken(req, res, next) {
     if (err) return res.sendStatus(403);
     // req.user = user;
     next();
-  });
-}
-
-function admin(req, res, next) {
-  const authHeader = req.headers["authorization"];
-  const token = authHeader && authHeader.split(" ")[1];
-  if (token == null) return res.sendStatus(401);
-  console.log(token);
-  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
-    if (err) return res.sendStatus(403);
-    console.log(user);
-    if (user.role_name == "admin") {
-      req.user = user;
-      next();
-    }
-    // res.sendStatus(403).json({ msg: " khong phai admin" });
-  });
-}
-
-function customer(req, res, next) {
-  const authHeader = req.headers["authorization"];
-  const token = authHeader && authHeader.split(" ")[1];
-  if (token == null) return res.sendStatus(401);
-  console.log(token);
-  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
-    if (err) return res.sendStatus(403);
-    if (user.role_name == "customer") {
-      req.user = user;
-      next();
-    }
-    res.sendStatus(403);
-  });
-}
-
-function employee(req, res, next) {
-  const authHeader = req.headers["authorization"];
-  const token = authHeader && authHeader.split(" ")[1];
-  if (token == null) return res.sendStatus(401);
-  console.log(token);
-  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
-    if (err) return res.sendStatus(403);
-    if (user.role_name == "employee") {
-      req.user = user;
-      next();
-    }
-    res.sendStatus(403).json({ msg: "Khong phai employee" });
   });
 }
 
