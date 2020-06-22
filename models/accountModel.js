@@ -8,6 +8,9 @@ module.exports = {
   findOne: (field, value) => {
     return db.load(`select * from account where ${field} = '${value}'`);
   },
+  findCustom: (field) =>{
+    return db.load(`select ${field} from account`);
+  },
   findByUserId: (id) => db.load(`select * from account where id = ${id}`),
   updateCheckingMoney: async (checking_account_number, amount) => {
     const account = await db.load(

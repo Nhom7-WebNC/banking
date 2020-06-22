@@ -10,6 +10,7 @@ router.createAccount = async function(req,res,next){
       if (rows.length > 0) {
         res.status(403).json({ msg: "tai khoan da ton tai" });
       } else {
+        var code;
         bcrypt.genSalt(10, async (err, salt) => {
           bcrypt.hash(password, salt, function (err, hash) {
             passwordHash = hash;
@@ -26,7 +27,26 @@ router.createAccount = async function(req,res,next){
               role_name: req.body.role_name,
               personal_number: req.body.personal_number,
             };
-            userModel.add(newUserMysql);
+            //create checking number
+            accountModel.findCustom('MAX(checking_account_number) as number ').then((rows)=>{
+              console.log(rows);
+              code = parseInt(rows[0].number) + 1 ;
+              
+              
+
+            })
+            userModel.add(newUserMysql).then((rows)=>{
+              console.log(rows);
+              
+              const newAccount ={
+                checking_account_number: code,
+                user_id: rows.insertId,
+                
+              }
+              console.log(newAccount);
+              accountModel.add(newAccount);
+            });
+            
             
             return res.status(200).json("dang ki thanh cong" + { newUserMysql });
           });
@@ -34,5 +54,5 @@ router.createAccount = async function(req,res,next){
       }
     });
     
-}
+}  
 module.exports = router;
