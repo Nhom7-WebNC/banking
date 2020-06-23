@@ -9,14 +9,13 @@ module.exports = {
     return db.load(`select * from account where ${field} = '${value}'`);
   },
 
-  findCustom: (field) =>{
+  findCustom: (field) => {
     return db.load(`select ${field} from account`);
   },
   findByUserId: (id) => db.load(`select * from account where id = ${id}`),
 
   findUserIdByAccountNumber: () => {
     return db.load(`select user from account where checking_account_number = ${checking_account_number} 
-          
     `);
   },
 

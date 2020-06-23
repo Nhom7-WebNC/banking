@@ -1,12 +1,12 @@
 var express = require("express");
 var router = express.Router();
 const userModel = require("../models/userModel");
-const bcrypt = require("bcryptjs");
+const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 module.exports = {
   signup: function (req, res) {
     const password = req.body.password;
-   
+
     const user = userModel.findOne("username", req.body.username).then((rows) => {
       if (rows.length > 0) {
         res.status(403).json({ msg: "tai khoan da ton tai" });
@@ -37,16 +37,19 @@ module.exports = {
   login: async function (req, res) {
     const username = req.body.username;
     const password = req.body.password;
-    userModel.findOne("username", username).then((rows) => {
-      console.log(rows);
-      const compare = bcrypt.compare(password, rows[0].password);
-
-      const user = { name: username, password: password, role_name: rows[0].role_name };
-      if (compare) {
-        const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET);
-        res.json({ accessToken: accessToken });
+    userModel.findOne("username", username).then(async (rows, err) => {
+      if (rows.length <= 0) {
+        res.status(401).json({ mes: "Tai khoan khong ton tai" });
       } else {
-        res.status(401).json({ mes: "failed" });
+        const compare = bcrypt.compareSync(password, rows[0].password);
+        console.log(compare);
+        const user = { name: username, password: password, role_name: rows[0].role_name };
+        if (compare) {
+          const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET);
+          res.json({ accessToken: accessToken });
+        } else {
+          res.status(401).json({ mes: "Sai mat khau" });
+        }
       }
     });
   },
