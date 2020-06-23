@@ -53,7 +53,7 @@ module.exports = {
 
             return res.status(200).json("dang ki thanh cong" + { newUserMysql });
           });
-        });
+        });x  
       }
     });
   },
