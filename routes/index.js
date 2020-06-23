@@ -17,6 +17,7 @@ const loginController = require("../controller/loginController");
 const jwt = require("jsonwebtoken");
 const employeeController = require("../controller/employeeController");
 const transactionController = require("../controller/transactionController");
+const recceiverListController = require("../controller/recceiverListController");
 
 router.get("/", authenticateToken, async function (req, res) {
   accountModel.updateCheckingMoney(3000001, 1234);
@@ -32,6 +33,7 @@ router.post("/signup", loginController.signup);
 router.post("/employee/create-account", employee, employeeController.createAccount);
 router.get("/employee", employee, employeeController.getAll);
 router.get("/transaction-history", employee, transactionController.getAll);
+router.post("/add-receiver",recceiverListController.add);
 function customer(req, res, next) {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];
