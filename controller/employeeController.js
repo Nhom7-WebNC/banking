@@ -4,6 +4,12 @@ const express = require("express");
 const bcrypt = require("bcryptjs");
 var router = express.Router();
 module.exports = {
+  getAll: async function (req, res, next) {
+    const data = userModel.findAll().then((rows) => {
+      console.log(rows);
+      res.status(200).json({ rows });
+    });
+  },
   createAccount: async function (req, res, next) {
     const password = req.body.password;
     const user = userModel.findOne("username", req.body.username).then((rows) => {
@@ -28,26 +34,20 @@ module.exports = {
               personal_number: req.body.personal_number,
             };
             //create checking number
-            accountModel.findCustom('MAX(checking_account_number) as number ').then((rows) => {
+            accountModel.findCustom("MAX(checking_account_number) as number ").then((rows) => {
               console.log(rows);
               code = parseInt(rows[0].number) + 1;
-
-
-
-            })
+            });
             userModel.add(newUserMysql).then((rows) => {
               console.log(rows);
 
               const newAccount = {
                 checking_account_number: code,
                 user_id: rows.insertId,
-
-              }
+              };
               console.log(newAccount);
               accountModel.add(newAccount);
             });
-
-
 
             userModel.add(newUserMysql);
 
@@ -56,8 +56,5 @@ module.exports = {
         });
       }
     });
-
-
   },
-  
-}
+};
