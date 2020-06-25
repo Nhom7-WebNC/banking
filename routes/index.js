@@ -29,6 +29,7 @@ router.post("/accounts/receive", customerController.receive);
 router.get("/accounts/PPNBankDetail", customerController.myBankDetail);
 router.post("/login", loginController.login);
 router.post("/signup", loginController.signup);
+router.post("/login/me", loginController.resolveToken);
 router.post("/employee/create-account", employee, employeeController.createAccount);
 router.get("/employee", employee, employeeController.getAll);
 router.get("/transaction-history", employee, transactionController.getAll);
