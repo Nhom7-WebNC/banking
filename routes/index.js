@@ -34,7 +34,7 @@ router.post("/login/me", loginController.resolveToken);
 router.post("/employee/create-account", employee, employeeController.createAccount);
 router.get("/employee", employee, employeeController.getAll);
 router.get("/transaction-history", employee, transactionController.getAll);
-router.post("/add-receiver",recceiverListController.add);
+router.post("/add-receiver", recceiverListController.add);
 function customer(req, res, next) {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];
