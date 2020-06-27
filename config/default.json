@@ -15,6 +15,8 @@
     "apiRoot": "https://great-banking.herokuapp.com/api",
     "expiresIn": "10m",
     "expireTime": 600000,
-    "refreshTokenSz": 80
+    "refreshTokenSz": 80,
+    "ACCESS_TOKEN_SECRET" : "ac19786d39c8aad823211c351d9f59b8f275b2853239761f5ec12bf0e360cbe0c769ed65349c14286603173fb2909455ae26b09249375b353eda4c37d3a69f82",
+    "REFRESH_TOKEN_SECRET" : "71d1d12899d672d8fef35e3cacdfb224ed68c15925c83de4fce88a5dc8189bae92e14d5bfabc69bef076a3e6e9b2de3372d947a334bf65e52f5dbd88b896df5c"
   }
 }

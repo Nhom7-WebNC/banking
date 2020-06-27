@@ -10,7 +10,6 @@ var app = express();
 
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
-require("./config/passport");
 
 app.use(cors());
 app.use(logger("dev"));

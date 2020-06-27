@@ -9,14 +9,12 @@ var superagent = require("superagent");
 const hash = require("object-hash");
 const moment = require("moment");
 const fs = require("fs");
-var row={};
+var row = {};
 
 const userModel = require("../models/userModel");
 const confirm = (req) => {
   console.log("header", req.headers);
-  const ts = req.headers.ts; // const ts = +req.headers['ts'];
-
-  // const bank_code = req.headers.bank_code;
+  const ts = req.headers.ts;
   const bank_code = req.get("bank_code");
   const sig = req.headers.sig;
   const secret = req.headers.secret;
@@ -70,17 +68,16 @@ module.exports = {
     var sig = myKeyPrivate.sign(hashString, "hex", "hex");
     const headers = { ts, bank_code, sig };
     const { content, amount, transferer, receiver, payFee } = req.body;
-    await accountModel.findOne('checking_account_number', transferer).then((rows) => {
+    await accountModel.findOne("checking_account_number", transferer).then((rows) => {
       row = rows[0];
-      console.log(row.checking_account_amount); 
-    })
-    if ( row.checking_account_amount > amount) {
+      console.log(row.checking_account_amount);
+    });
+    if (row.checking_account_amount > amount) {
       superagent
         .post(`${config.auth.apiRoot}/money-transfer`)
         .send(body)
         .set(headers)
         .end((err, result) => {
-
           accountModel.updateCheckingMoney(transferer, 0 - amount);
           //log
           //history log
@@ -97,10 +94,8 @@ module.exports = {
           };
           transactionModel.add(transactionHistory);
           res.status(200).json(result.text);
-
-
         });
-    }else {
+    } else {
       res.status(400).json({
         message: "Tài khoản không đủ tiền",
         receiver,
@@ -150,8 +145,7 @@ module.exports = {
       case "TUB":
         const { content, amount, transferer, receiver, payFee } = req.body;
 
-        if (accountModel.findOne('checking_account_number', receiver)) {
-
+        if (accountModel.findOne("checking_account_number", receiver)) {
           accountModel.updateCheckingMoney(receiver, amount);
           //log
           let transactionHistory = {
@@ -166,7 +160,6 @@ module.exports = {
             message: body.content,
           };
           transactionModel.add(transactionHistory);
-
         } else {
           res.status(400).json({
             message: "Veri successont have this account",
@@ -208,6 +201,7 @@ module.exports = {
       return res.status(500).send({ message: "Error." });
     }
   },
+  
   myBankDetail: async function (req, res) {
     var con = confirm(req);
     if (con == 1) {
@@ -235,7 +229,7 @@ module.exports = {
       const rows_id = await accountModel.findOne("checking_account_number", req.body.account_number);
       const idFind = rows_id[0].user_id;
       const rows = await userModel.findOne("id", idFind);
-      // console.log("12345");
+      console.log(rows_id);
       if (rows.length == 0) {
         return res.status(403).send({
           message: `No user has account number ${req.body.account_number}`,

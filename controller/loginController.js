@@ -3,6 +3,7 @@ var router = express.Router();
 const userModel = require("../models/userModel");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const config = require("../config/default.json");
 module.exports = {
   signup: function (req, res) {
     const password = req.body.password;
@@ -39,16 +40,16 @@ module.exports = {
     const password = req.body.password;
     userModel.findOne("username", username).then(async (rows, err) => {
       if (rows.length <= 0) {
-        res.status(401).json({ mes: "Tai khoan khong ton tai" });
+        res.status(401).json({ msg: "tai khoan khong ton tai" });
       } else {
         const compare = bcrypt.compareSync(password, rows[0].password);
         console.log(compare);
         const user = { name: username, password: password, role_name: rows[0].role_name };
         if (compare) {
-          const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET);
+          const accessToken = jwt.sign(user, config.auth.ACCESS_TOKEN_SECRET);
           res.json({ accessToken: accessToken });
         } else {
-          res.status(401).json({ mes: "Sai mat khau" });
+          res.status(401).json({ msg: "sai mat khau" });
         }
       }
     });
@@ -58,7 +59,7 @@ module.exports = {
     const token = authHeader && authHeader.split(" ")[1];
     if (token == null) return res.sendStatus(403);
     console.log(token);
-    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
+    jwt.verify(token, config.auth.ACCESS_TOKEN_SECRET, (err, user) => {
       if (err) return res.sendStatus(403);
 
       if (user) {
