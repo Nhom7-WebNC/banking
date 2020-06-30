@@ -59,10 +59,38 @@ module.exports = {
     });
   },
   getTransaction: async function(req, res, next){
+    var activeTab0=[];
+    var activeTab1=[];
+   
     
-    transactionModel.findByAccountNumber(req.params.accountNumber).then((row)=>{
-      res.status(200).json({data: row});
+    var accountNumber = req.params.accountNumber;
+    await transactionModel.findByAccountNumber(accountNumber).then((rows)=>{
+      
+      rows.map((row)=>
+      {
+        if (row.receiver_account_number == accountNumber)
+        {
+          //console.log(row);
+          activeTab0.push(row);
+        }
+        if (row.sender_account_number == accountNumber)
+        {
+          //console.log(row);
+          activeTab1.push(row);
+        }
+      })
+     
+    
+      
     })
+
+    activeTab1.length && activeTab0.length ? (
+      res.status(200).json({data: {activeTab0: activeTab0, activeTab1: activeTab1}})
+    ):(
+      res.status(401).json({msg: "Tài khoản chưa có giao dịch"})
+    )
+    
+    // res.status(200).json({data: activeTab1})
     
   },
 };
