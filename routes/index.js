@@ -18,6 +18,7 @@ router.get("/", authenticateToken, async function (req, res) {
 router.post("/customers/sendOTP", customer, sendOTPController.sendOTP);
 router.post("/customers/dashboard", customer, loginController.resolveToken);
 router.post("/customers/transfer", customer, customerController.transfer);
+router.get("/customers/infoAccount", customer, customerController.infoAccount);
 router.get("/customers/TUBBankDetail", customer, customerController.partnerBankDetail);
 router.post("/accounts/receive", customerController.receive);
 router.get("/accounts/PPNBankDetail", customerController.myBankDetail);

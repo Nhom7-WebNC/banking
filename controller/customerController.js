@@ -51,6 +51,33 @@ const confirm = (req) => {
   //  sig = md5(bank_code + ts + JSON.stringify(testbody) + hashSecretKey);
 };
 module.exports = {
+  //------------------------------lấy info account -------------------------------------------------
+  infoAccount: async function (req,res){
+    const userId = userModel.findOne("username", req.body.username).then((rows) => {
+      console.log("userid", rows[0].id);
+
+      if (rows.length <= 0) {
+        return res.status(401).json({ msg: "Nhap sai ten" });
+      }
+      const account = accountModel.findOne("user_id", rows[0].id).then((rows2) => {
+        const row = rows2[0];
+        console.log("userid", row);
+
+        if (!row) {
+          return res.status(401).json({ msg: "nguoi dung chua tao tai khoan" });
+        }
+
+        const data = {
+          checking_account_number: row.checking_account_number,
+          checking_account_amount: row.checking_account_amount,
+        };
+        console.log(data);
+        res.status(200).json({ data: data });
+      });
+    });
+  },
+    //------------------------------lấy info account -------------------------------------------------
+
   transfer: async function (req, res) {
     const privateKeyArmored = fs.readFileSync("my_rsa_private.key", "utf8");
 
