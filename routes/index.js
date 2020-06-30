@@ -29,6 +29,8 @@ router.post("/employee/create-account", employee, employeeController.createAccou
 router.get("/employee", employee, employeeController.getAll);
 router.get("/transaction-history", employee, transactionController.getAll);
 router.post("/add-receiver", recceiverListController.add);
+
+router.get("/employee/get-transaction/:accountNumber", employeeController.getTransaction);
 function customer(req, res, next) {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];

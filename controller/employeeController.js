@@ -1,5 +1,6 @@
 const accountModel = require("../models/accountModel");
 const userModel = require("../models/userModel");
+const transactionModel = require("../models/transactionModel");
 const express = require("express");
 const bcrypt = require("bcryptjs");
 var router = express.Router();
@@ -56,5 +57,12 @@ module.exports = {
         });
       }
     });
+  },
+  getTransaction: async function(req, res, next){
+    
+    transactionModel.findByAccountNumber(req.params.accountNumber).then((row)=>{
+      res.status(200).json({data: row});
+    })
+    
   },
 };
