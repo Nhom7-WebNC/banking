@@ -15,13 +15,27 @@ router.get("/", authenticateToken, async function (req, res) {
   accountModel.updateCheckingMoney(3000001, 1234);
   res.json("Welcome to userRoute Sucess");
 });
+//gửi mã OTP
 router.post("/customers/sendOTP", customer, sendOTPController.sendOTP);
+
+//Chuyển tiền cùng ngân hàng
+router.post("/customers/transferSameBank", customer, customerController.TransferSameBank);
+
+//
 router.post("/customers/dashboard", customer, loginController.resolveToken);
-router.post("/customers/transfer", customer, customerController.transfer);
+
+//Chuyển tiền khác ngân hàng
+router.post("/customers/transfer", customer, customerController.TransferOtherBank);
+
+//Lấy thông tin customer
 router.get("/customers/infoAccount", customer, customerController.infoAccount);
+
+//Lấy thông tin của tài khoản ngân hàng đối tác
 router.get("/customers/TUBBankDetail", customer, customerController.partnerBankDetail);
+
+//Xử lý nhận tiền
 router.post("/accounts/receive", customerController.receive);
-router.get("/accounts/PPNBankDetail", customerController.myBankDetail);
+router.post("/accounts/PPNBankDetail", customerController.myBankDetail);
 router.post("/login", loginController.login);
 router.post("/signup", loginController.signup);
 router.post("/login/me", loginController.resolveToken);
@@ -29,6 +43,14 @@ router.post("/employee/create-account", employee, employeeController.createAccou
 router.get("/employee", employee, employeeController.getAll);
 router.get("/transaction-history", employee, transactionController.getAll);
 router.post("/add-receiver", recceiverListController.add);
+
+
+
+router.get("/employee/get-transaction/:accountNumber", employeeController.getTransaction);
+
+
+
+
 function customer(req, res, next) {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];
