@@ -6,8 +6,11 @@ module.exports = {
   },
   findAll: () => db.load(`select * from transaction_history`),
   findByAccountNumber: (account_number) =>
-    db.load(
-      `select * from transaction_history where receiver_account_number = ${account_number} or sender_account_number =${account_number}`
-    ),
+    db.load(`select * from transaction_history where receiver_account_number = ${account_number} or sender_account_number =${account_number}` ),
   findById: (id) => db.load(`select  * from transaction_history where receiver_id = ${id}`),
+  findByReciverAccountNumber:(account_number)=>
+  db.load(`select * from transaction_history where receiver_account_number = ${account_number}` ),
+  findBySenderAccountNumber:(account_number)=>
+  db.load(`select * from transaction_history where sender_account_number = ${account_number}` ),
+  
 };
