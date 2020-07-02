@@ -125,7 +125,7 @@ module.exports = {
 
   //------------------------------lấy info account -------------------------------------------------
   infoAccount: async function (req, res) {
-    const userId = userModel.findOne("username", req.body.username).then((rows) => {
+    const userId = userModel.findOne("username", req.query.username).then((rows) => {
       console.log("userid", rows[0].id);
 
       if (rows.length <= 0) {
