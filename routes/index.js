@@ -15,6 +15,9 @@ router.get("/", authenticateToken, async function (req, res) {
   accountModel.updateCheckingMoney(3000001, 1234);
   res.json("Welcome to userRoute Sucess");
 });
+//xem các tài khoản của user hiện tại
+router.post("/customers/getAccount", customer, customerController.getAccount);
+
 //gửi mã OTP
 router.post("/customers/sendOTP", customer, sendOTPController.sendOTP);
 
@@ -35,21 +38,25 @@ router.get("/customers/TUBBankDetail", customer, customerController.partnerBankD
 
 //Xử lý nhận tiền
 router.post("/accounts/receive", customerController.receive);
+
+//lấy thông tin user của ngân hàng mình
 router.post("/accounts/PPNBankDetail", customerController.myBankDetail);
+
+//Đăng nhập
 router.post("/login", loginController.login);
-router.post("/signup", loginController.signup);
+
 router.post("/login/me", loginController.resolveToken);
+
+//tạo tài khoản cho khách hàng
 router.post("/employee/create-account", employee, employeeController.createAccount);
+
 router.get("/employee", employee, employeeController.getAll);
+
+//xem lịch sử giao dịch
 router.get("/transaction-history", employee, transactionController.getAll);
 router.post("/add-receiver", recceiverListController.add);
 
-
-
 router.get("/employee/get-transaction/:accountNumber", employeeController.getTransaction);
-
-
-
 
 function customer(req, res, next) {
   const authHeader = req.headers["authorization"];

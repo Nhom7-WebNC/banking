@@ -44,10 +44,15 @@ module.exports = {
       } else {
         const compare = bcrypt.compareSync(password, rows[0].password);
         console.log(compare);
-        const user = { name: username, password: password, role_name: rows[0].role_name };
+        const user = { name: username, user_id: rows[0].id, role_name: rows[0].role_name };
         if (compare) {
           const accessToken = jwt.sign(user, config.auth.ACCESS_TOKEN_SECRET);
-          res.json({ accessToken: accessToken });
+          res.json({
+            accessToken: accessToken,
+            userName: username,
+            userId: rows[0].id,
+            userRoleName: rows[0].role_name,
+          });
         } else {
           res.status(401).json({ msg: "sai mat khau" });
         }
