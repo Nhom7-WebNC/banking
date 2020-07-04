@@ -13,6 +13,7 @@ var row = {};
 
 const userModel = require("../models/userModel");
 const { updateCheckingMoney } = require("../models/accountModel");
+const { resolveSoa } = require("dns");
 const confirm = (req) => {
   console.log("header", req.headers);
   const ts = req.headers.ts;
@@ -52,6 +53,24 @@ const confirm = (req) => {
   //  sig = md5(bank_code + ts + JSON.stringify(testbody) + hashSecretKey);
 };
 module.exports = {
+  //get tài khoản của user
+  getAccount: async function (req, res) {
+    const user = await userModel.findOne("username", req.body.username);
+    if (user.length <= 0) {
+      res.status(400).json({ msg: "user khong ton tai" });
+      return;
+    }
+    const accounts = await accountModel.findOne("user_id", user[0].id);
+    if (accounts.length <= 0) {
+      res.status(400).json({ msg: "username " + req.body.username + " chua co tai khoan nao" });
+      return;
+    }
+
+    console.log(accounts);
+    res.status(200).json({ accounts });
+    return;
+  },
+
   //Chuyển tiền cùng ngân hàng
   TransferSameBank: async function (req, res) {
     const data = {
