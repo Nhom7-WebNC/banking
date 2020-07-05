@@ -9,6 +9,7 @@ const jwt = require("jsonwebtoken");
 const employeeController = require("../controller/employeeController");
 const transactionController = require("../controller/transactionController");
 const recceiverListController = require("../controller/recceiverListController");
+const debtReminderController = require("../controller/debtReminderController");
 const config = require("../config/default.json");
 
 router.get("/", authenticateToken, async function (req, res) {
@@ -56,6 +57,7 @@ router.get("/employee", employee, employeeController.getAll);
 //xem lịch sử giao dịch
 router.get("/transaction-history", employee, transactionController.getAll);
 router.post("/add-receiver", recceiverListController.add);
+router.get ("/test",debtReminderController.debtReminder)
 
 router.get("/employee/get-transaction/:accountNumber", employeeController.getTransaction);
 
