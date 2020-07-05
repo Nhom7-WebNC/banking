@@ -15,6 +15,7 @@ router.get("/", authenticateToken, async function (req, res) {
   accountModel.updateCheckingMoney(3000001, 1234);
   res.json("Welcome to userRoute Sucess");
 });
+
 //xem các tài khoản của user hiện tại
 router.post("/customers/getAccount", customer, customerController.getAccount);
 
@@ -25,7 +26,6 @@ router.post("/customers/sendOTP", customer, sendOTPController.sendOTP);
 router.post("/customers/transferSameBank", customer, customerController.TransferSameBank);
 
 //
-router.post("/customers/dashboard", customer, loginController.resolveToken);
 
 //Chuyển tiền khác ngân hàng
 router.post("/customers/transfer", customer, customerController.TransferOtherBank);
@@ -45,7 +45,8 @@ router.post("/accounts/PPNBankDetail", customerController.myBankDetail);
 //Đăng nhập
 router.post("/login", loginController.login);
 
-router.post("/login/me", loginController.resolveToken);
+//tạo mới token
+router.post("/login/getToken", loginController.refreshToKen);
 
 //tạo tài khoản cho khách hàng
 router.post("/employee/create-account", employee, employeeController.createAccount);
