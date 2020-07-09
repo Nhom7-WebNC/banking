@@ -6,36 +6,31 @@ const jwt = require("jsonwebtoken");
 const config = require("../config/default.json");
 const auth = require("../middlewares/auth.mdw");
 module.exports = {
-  refreshToKen: function (req, res) {
+  getToken: function (req, res) {
+    console.log("getTOken");
+    const refreshToken = req.body.refreshToken;
     const username = req.body.username;
-    const password = req.body.password;
-    console.log(username, password);
-    if (typeof username == "undefined" || typeof password == "undefined") {
-      res.status(401);
-      return "hi";
-    }
     userModel.findOne("username", username).then(async (rows, err) => {
       if (rows.length <= 0) {
-        res.status(401);
+        res.status(401).json({ msg: "refresh token hết hạn vui lòng đăng nhập lại" });
+        return;
       } else {
-        const compare = bcrypt.compareSync(password, rows[0].password);
+        const userFind = rows[0];
+        if (refreshToken == userFind.token && auth.refreshTokenExpired(userFind.expries_at) != true) {
+          const user = {
+            username: username,
+            id: userFind.id,
+            role: userFind.role_name,
+          };
+          const accessToken = await auth.generateAuthToken(user);
 
-        if (compare) {
-          const accessToken = auth.generateAuthToken(user);
-          const refreshToken = await auth.generateRefreshToken(user).then((rows) => {
-            console.log("rows", rows);
-            console.log("accessToken", accessToken);
-            res.status(200).json({
-              accessToken: accessToken,
-              refreshToken: rows,
-            });
-          });
+          const refreshToken = await auth.generateRefreshToken(user);
+          res.status(200).json({ accessToken: accessToken, refreshToken: refreshToken });
         } else {
-          res.status(401);
+          res.status(401).json({ msg: "refresh token hết hạn vui lòng đăng nhập lại" });
         }
       }
     });
-    res.status(401);
   },
 
   signup: function (req, res) {
@@ -80,12 +75,18 @@ module.exports = {
 
         if (compare) {
           const accessToken = auth.generateAuthToken(user);
-          const refreshToken = await auth.generateRefreshToken(user).then((rows) => {
-            res.status(200).json({
-              accessToken: accessToken,
-              refreshToken: rows,
-            });
+          const refreshToken = auth.generateRefreshToken(user);
+          res.status(200).json({
+            token: accessToken,
+            user: user,
           });
+
+          // .then((rows) => {
+          //   res.status(200).json({
+          //     accessToken: accessToken,
+          //     refreshToken: rows,
+          //   });
+          // });
         } else {
           res.status(401).json({ msg: "đăng nhập không thành công" });
         }

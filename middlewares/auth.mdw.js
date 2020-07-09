@@ -23,6 +23,8 @@ module.exports = {
     const b = await db.load(`UPDATE user SET expries_at= "${expiresAt}" WHERE username = "${username}"`);
     return token;
   },
+
+  //return true when token is expried
   refreshTokenExpired: (time) => {
     const result = time > Date.now() / 1000 ? false : true;
     return result;

@@ -17,49 +17,48 @@ router.get("/", authenticateToken, async function (req, res) {
   res.json("Welcome to userRoute Sucess");
 });
 
+//Đăng nhập
+router.post("/login", loginController.login);
+
+//refresh token
+router.post("/login/getToken", loginController.getToken);
+
+//Lấy thông tin customer
+router.get("/customers/infoAccount", customer, customerController.infoAccount);
+
 //xem các tài khoản của user hiện tại
 router.post("/customers/getAccount", customer, customerController.getAccount);
 
 //gửi mã OTP
 router.post("/customers/sendOTP", customer, sendOTPController.sendOTP);
 
+//lấy thông tin user của ngân hàng mình
+router.post("/accounts/PPNBankDetail", customerController.myBankDetail);
 //Chuyển tiền cùng ngân hàng
 router.post("/customers/transferSameBank", customer, customerController.TransferSameBank);
 
-//
-
-//Chuyển tiền khác ngân hàng
-router.post("/customers/transfer", customer, customerController.TransferOtherBank);
-
-//Lấy thông tin customer
-router.get("/customers/infoAccount", customer, customerController.infoAccount);
-
 //Lấy thông tin của tài khoản ngân hàng đối tác
 router.get("/customers/TUBBankDetail", customer, customerController.partnerBankDetail);
+//Chuyển tiền khác ngân hàng
+router.post("/customers/transfer", customer, customerController.TransferOtherBank);
 
 //Xử lý nhận tiền
 router.post("/accounts/receive", customerController.receive);
 
-//lấy thông tin user của ngân hàng mình
-router.post("/accounts/PPNBankDetail", customerController.myBankDetail);
-
-//Đăng nhập
-router.post("/login", loginController.login);
-
-//tạo mới token
-router.post("/login/getToken", loginController.refreshToKen);
-
 //tạo tài khoản cho khách hàng
 router.post("/employee/create-account", employee, employeeController.createAccount);
 
+//lấy danh sách nhân viên
 router.get("/employee", employee, employeeController.getAll);
 
-//xem lịch sử giao dịch
+//xem tất cả lịch sử giao dịch
 router.get("/transaction-history", employee, transactionController.getAll);
-router.post("/add-receiver", recceiverListController.add);
-router.get ("/test",debtReminderController.debtReminder)
 
+//Xem lịch sử giao dịch của tài khoản nào đó
 router.get("/employee/get-transaction/:accountNumber", employeeController.getTransaction);
+
+//Thên người nhận cho user nào đó ( truyền vào user_id và {account người nhận , tên gợi nhớ, ngân hàng người nhận})
+router.post("/add-receiver", recceiverListController.add);
 
 function customer(req, res, next) {
   const authHeader = req.headers["authorization"];
