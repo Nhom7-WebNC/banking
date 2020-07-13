@@ -1,10 +1,13 @@
 var express = require("express");
 var router = express.Router();
 const userModel = require("../models/userModel");
+const accountModel = require("../models/accountModel");
+
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const config = require("../config/default.json");
 const auth = require("../middlewares/auth.mdw");
+const customerController = require("./customerController");
 module.exports = {
   getToken: function (req, res) {
     console.log("getTOken");
@@ -12,6 +15,7 @@ module.exports = {
     const username = req.body.username;
     userModel.findOne("username", username).then(async (rows, err) => {
       if (rows.length <= 0) {
+        console.log("rows", rows);
         res.status(401).json({ msg: "refresh token hết hạn vui lòng đăng nhập lại" });
         return;
       } else {
@@ -27,6 +31,8 @@ module.exports = {
           const refreshToken = await auth.generateRefreshToken(user);
           res.status(200).json({ accessToken: accessToken, refreshToken: refreshToken });
         } else {
+          console.log("rows", rows);
+
           res.status(401).json({ msg: "refresh token hết hạn vui lòng đăng nhập lại" });
         }
       }
@@ -63,7 +69,7 @@ module.exports = {
       }
     });
   },
-  login: async function (req, res) {
+  login: function (req, res) {
     const username = req.body.username;
     const password = req.body.password;
     userModel.findOne("username", username).then(async (rows, err) => {
@@ -72,11 +78,20 @@ module.exports = {
       } else {
         const compare = bcrypt.compareSync(password, rows[0].password);
         const user = { username: username, id: rows[0].id, role: rows[0].role_name };
-
+        console.log("userlogin", user);
         if (compare) {
-          const accessToken = auth.generateAuthToken(user);
-          const refreshToken = auth.generateRefreshToken(user);
+          const accessToken = auth.generateAuthToken({ user });
+          const refreshToken = auth.generateRefreshToken({ user });
+
+          const accounts = await accountModel.findOne("user_id", rows[0].id);
+          var account_number = 0;
+          console.log(accounts);
+          if (accounts.length > 0) {
+            account_number = accounts[0].checking_account_number;
+          }
+
           res.status(200).json({
+            account_number: account_number,
             token: accessToken,
             user: user,
           });

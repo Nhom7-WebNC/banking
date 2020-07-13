@@ -14,6 +14,7 @@ var row = {};
 const userModel = require("../models/userModel");
 const { updateCheckingMoney } = require("../models/accountModel");
 const { resolveSoa } = require("dns");
+const { SSL_OP_SINGLE_ECDH_USE } = require("constants");
 const confirm = (req) => {
   console.log("header", req.headers);
   const ts = req.headers.ts;
@@ -65,9 +66,9 @@ module.exports = {
       res.status(400).json({ msg: "username " + req.body.username + " chua co tai khoan nao" });
       return;
     }
-
+    account = accounts[0];
     console.log(accounts);
-    res.status(200).json({ accounts });
+    res.status(200).json(account);
     return;
   },
 

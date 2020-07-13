@@ -6,7 +6,9 @@ const config = require("../config/default.json");
 
 module.exports = {
   generateAuthToken: (entity) => {
+    console.log("entity", entity);
     const { user } = entity;
+    console.log("userauth", user);
     const token = jwt.sign({ user: user }, "access", { expiresIn: "1d" });
     return token;
   },

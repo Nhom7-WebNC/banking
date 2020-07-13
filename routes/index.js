@@ -8,7 +8,7 @@ const loginController = require("../controller/loginController");
 const jwt = require("jsonwebtoken");
 const employeeController = require("../controller/employeeController");
 const transactionController = require("../controller/transactionController");
-const recceiverListController = require("../controller/recceiverListController");
+const receiverListController = require("../controller/receiverListController");
 const debtReminderController = require("../controller/debtReminderController");
 const config = require("../config/default.json");
 
@@ -16,6 +16,9 @@ router.get("/", authenticateToken, async function (req, res) {
   accountModel.updateCheckingMoney(3000001, 1234);
   res.json("Welcome to userRoute Sucess");
 });
+
+//lấy danh sách gợi nhớ từ user Id
+router.post("/customers/getReceiverList", customer, receiverListController.getById);
 
 //Đăng nhập
 router.post("/login", loginController.login);
@@ -58,18 +61,20 @@ router.get("/transaction-history", employee, transactionController.getAll);
 router.get("/employee/get-transaction/:accountNumber", employeeController.getTransaction);
 
 //Thên người nhận cho user nào đó ( truyền vào user_id và {account người nhận , tên gợi nhớ, ngân hàng người nhận})
-router.post("/add-receiver", recceiverListController.add);
+router.post("/customers/add-receiver", customer, receiverListController.add);
 
 function customer(req, res, next) {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];
+  console.log("token", token);
   if (token == null) return res.sendStatus(403);
   console.log(token);
-  jwt.verify(token, config.auth.ACCESS_TOKEN_SECRET, (err, user) => {
+  jwt.verify(token, "access", (err, resp) => {
+    console.log("user3", resp);
     if (err) return res.sendStatus(403);
 
-    if (user.role_name == "customer") {
-      req.user = user;
+    if (resp.user.role == "customer") {
+      req.user = resp.user;
       next();
     } else {
       res.sendStatus(403);
@@ -83,10 +88,10 @@ function employee(req, res, next) {
   const token = authHeader && authHeader.split(" ")[1];
   if (token == null) return res.sendStatus(403);
   console.log(token);
-  jwt.verify(token, config.auth.ACCESS_TOKEN_SECRET, (err, user) => {
+  jwt.verify(token, "access", (err, user) => {
     if (err) return res.sendStatus(403);
 
-    if (user.role_name == "employee") {
+    if (user.role == "employee") {
       req.user = user;
       next();
     } else {
@@ -100,10 +105,10 @@ function admin(req, res, next) {
   const token = authHeader && authHeader.split(" ")[1];
   if (token == null) return res.sendStatus(403);
   console.log(token);
-  jwt.verify(token, config.auth.ACCESS_TOKEN_SECRET, (err, user) => {
+  jwt.verify(token, "access", (err, user) => {
     if (err) return res.sendStatus(403);
 
-    if (user.role_name == "admin") {
+    if (user.role == "admin") {
       req.user = user;
       next();
     } else {
@@ -118,7 +123,7 @@ function authenticateToken(req, res, next) {
   const token = authHeader && authHeader.split(" ")[1];
   if (token == null) return res.sendStatus(401);
   console.log(token);
-  jwt.verify(token, config.auth.ACCESS_TOKEN_SECRET, (err, user) => {
+  jwt.verify(token, "access", (err, user) => {
     console.log(user);
     if (err) return res.sendStatus(403);
     // req.user = user;
