@@ -10,5 +10,11 @@ module.exports = {
   findOne: (field, value) => {
     return db.load(`select * from user where ${field} = '${value}'`);
   },
+  delete: (entity) =>{
+    return db.delete(entity,"user")
+  },
+  updateByOne: (field,value,entity) => {
+    return db.update("user",field,id,entity);
+  }
 };
 //ssd*dd

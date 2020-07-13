@@ -7,4 +7,5 @@ module.exports = {
     findByAccountNumber : receiver_account_number => db.load(`select * from receiver where receiver_account_number = ${receiver_account_number}`),
     findById : id => db.load (`select  * from receiver where receiver_id = ${id}`),
     
+    
 };
