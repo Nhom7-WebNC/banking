@@ -11,6 +11,7 @@ const transactionController = require("../controller/transactionController");
 const receiverListController = require("../controller/receiverListController");
 const debtReminderController = require("../controller/debtReminderController");
 const config = require("../config/default.json");
+const adminController = require("../controller/adminController");
 
 router.get("/", authenticateToken, async function (req, res) {
   accountModel.updateCheckingMoney(3000001, 1234);
@@ -63,6 +64,8 @@ router.get("/employee/get-transaction/:accountNumber", employeeController.getTra
 //Thên người nhận cho user nào đó ( truyền vào user_id và {account người nhận , tên gợi nhớ, ngân hàng người nhận})
 router.post("/customers/add-receiver", customer, receiverListController.add);
 
+//quản lý nhân viên
+router.get("/admin/manage-employee",adminController.manager);
 function customer(req, res, next) {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];

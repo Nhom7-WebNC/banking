@@ -50,7 +50,6 @@ module.exports = {
               accountModel.add(newAccount);
             });
 
-            userModel.add(newUserMysql);
 
             return res.status(200).json("dang ki thanh cong" + { newUserMysql });
           });
