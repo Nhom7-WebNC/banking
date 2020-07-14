@@ -59,13 +59,13 @@ router.get("/employee", employee, employeeController.getAll);
 router.get("/transaction-history", employee, transactionController.getAll);
 
 //Xem lịch sử giao dịch của tài khoản nào đó
-router.get("/employee/get-transaction/:accountNumber", employeeController.getTransaction);
+router.get("/employee/get-transaction/:accountNumber", employee, employeeController.getTransaction);
 
 //Thên người nhận cho user nào đó ( truyền vào user_id và {account người nhận , tên gợi nhớ, ngân hàng người nhận})
 router.post("/customers/add-receiver", customer, receiverListController.add);
 
 //quản lý nhân viên
-router.get("/admin/manage-employee",adminController.manager);
+router.get("/admin/manage-employee", admin, adminController.manager);
 function customer(req, res, next) {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];
@@ -91,11 +91,12 @@ function employee(req, res, next) {
   const token = authHeader && authHeader.split(" ")[1];
   if (token == null) return res.sendStatus(403);
   console.log(token);
-  jwt.verify(token, "access", (err, user) => {
+  jwt.verify(token, "access", (err, resp) => {
+    console.log("user3", resp);
     if (err) return res.sendStatus(403);
 
-    if (user.role == "employee") {
-      req.user = user;
+    if (resp.user.role == "employee") {
+      req.user = resp.user;
       next();
     } else {
       res.sendStatus(403);
@@ -108,11 +109,12 @@ function admin(req, res, next) {
   const token = authHeader && authHeader.split(" ")[1];
   if (token == null) return res.sendStatus(403);
   console.log(token);
-  jwt.verify(token, "access", (err, user) => {
+  jwt.verify(token, "access", (err, resp) => {
+    console.log("user3", resp);
     if (err) return res.sendStatus(403);
 
-    if (user.role == "admin") {
-      req.user = user;
+    if (resp.user.role == "admin") {
+      req.user = resp.user;
       next();
     } else {
       res.sendStatus(403);

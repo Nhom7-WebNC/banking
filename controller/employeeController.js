@@ -3,6 +3,8 @@ const userModel = require("../models/userModel");
 const transactionModel = require("../models/transactionModel");
 const express = require("express");
 const bcrypt = require("bcryptjs");
+const moment = require("moment");
+
 var router = express.Router();
 module.exports = {
   getAll: async function (req, res, next) {
@@ -11,15 +13,15 @@ module.exports = {
       res.status(200).json({ rows });
     });
   },
-  createAccount: async function (req, res, next) {
+  createAccount: function (req, res, next) {
     const password = req.body.password;
     const user = userModel.findOne("username", req.body.username).then((rows) => {
       if (rows.length > 0) {
         res.status(403).json({ msg: "tai khoan da ton tai" });
       } else {
         var code;
-        bcrypt.genSalt(10, async (err, salt) => {
-          bcrypt.hash(password, salt, function (err, hash) {
+        bcrypt.genSalt(10, (err, salt) => {
+          bcrypt.hash(password, salt, async function (err, hash) {
             passwordHash = hash;
 
             const newUserMysql = {
@@ -38,58 +40,47 @@ module.exports = {
             accountModel.findCustom("MAX(checking_account_number) as number ").then((rows) => {
               console.log(rows);
               code = parseInt(rows[0].number) + 1;
+
+              userModel.add(newUserMysql).then((rows) => {
+                const newAccount = {
+                  checking_account_number: code,
+                  user_id: rows.insertId,
+                  created_at: moment().format("YYYY-MM-DD"),
+                };
+                console.log(newAccount);
+                accountModel.add(newAccount);
+              });
             });
-            userModel.add(newUserMysql).then((rows) => {
-              console.log(rows);
-
-              const newAccount = {
-                checking_account_number: code,
-                user_id: rows.insertId,
-              };
-              console.log(newAccount);
-              accountModel.add(newAccount);
-            });
-
-
-            return res.status(200).json("dang ki thanh cong" + { newUserMysql });
           });
+
+          return res.status(200).json({ msg: "dang ki thanh cong" });
         });
       }
     });
   },
-  getTransaction: async function(req, res, next){
-    var activeTab0=[];
-    var activeTab1=[];
-   
-    
+  getTransaction: async function (req, res, next) {
+    var activeTab0 = [];
+    var activeTab1 = [];
+    console.log("hh");
+
     var accountNumber = req.params.accountNumber;
-    await transactionModel.findByAccountNumber(accountNumber).then((rows)=>{
-      
-      rows.map((row)=>
-      {
-        if (row.receiver_account_number == accountNumber)
-        {
+    await transactionModel.findByAccountNumber(accountNumber).then((rows) => {
+      rows.map((row) => {
+        if (row.receiver_account_number == accountNumber) {
           //console.log(row);
           activeTab0.push(row);
         }
-        if (row.sender_account_number == accountNumber)
-        {
+        if (row.sender_account_number == accountNumber) {
           //console.log(row);
           activeTab1.push(row);
         }
-      })
-     
-    
-      
-    })
+      });
+    });
 
-    activeTab1.length && activeTab0.length ? (
-      res.status(200).json({data: {activeTab0: activeTab0, activeTab1: activeTab1}})
-    ):(
-      res.status(401).json({msg: "Tài khoản chưa có giao dịch"})
-    )
-    
+    activeTab1.length && activeTab0.length
+      ? res.status(200).json({ data: { activeTab0: activeTab0, activeTab1: activeTab1 } })
+      : res.status(401).json({ msg: "Tài khoản chưa có giao dịch" });
+
     // res.status(200).json({data: activeTab1})
-    
   },
 };
