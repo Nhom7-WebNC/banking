@@ -11,6 +11,7 @@ module.exports = {
     },
     createAccount: async function (req, res, next) {
         const password = req.body.password;
+          console.log(password);
         const user = userModel.findOne("username", req.body.username).then((rows) => {
           if (rows.length > 0) {
             res.status(403).json({ msg: "tai khoan da ton tai" });
@@ -33,7 +34,7 @@ module.exports = {
                   personal_number: req.body.personal_number,
                 };
                 //create checking number
-              
+                console.log(newUserMysql);
                 
     
                 userModel.add(newUserMysql);
@@ -45,10 +46,11 @@ module.exports = {
         });
       },
     delete: function(req,res,next){
+      console.log("afdsfasdfsafsdfasfd")
         const entity = {
-            id: req.body.id,
+            id: req.params.id,
         }
-        userModel.delete(entity)
+        //userModel.delete(entity)
     },
     update: async function (req,res,next){
         
