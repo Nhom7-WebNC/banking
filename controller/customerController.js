@@ -252,30 +252,38 @@ module.exports = {
 
     if (currentTime - ts > config.auth.expireTime) {
       console.log("return 1");
-      return 1;
+      res.status(401).json({ msg: "wrong time" });
     }
 
     if (bank_code != config.auth.partnerRSA && bank_code != config.auth.partnerPGP) {
       console.log("return 2");
-      return 2;
+      res.status(401).json({ msg: "wrong bank code" });
     }
 
     if (!req.body.transferer) {
       console.log("return 4");
-      return 4;
+      res.status(401).json({ msg: "wrong transferer" });
+
+      res.status(401);
     }
 
     if (veri != true) {
-      return res.status(400).send({
-        message: "Wrong sign.",
+      return res.status(400).json({
+        msg: "Wrong sign.",
       });
     }
 
     switch (bank_code) {
       case "TUB":
         const { content, amount, transferer, receiver, payFee } = req.body;
-
-        if (accountModel.findOne("checking_account_number", receiver)) {
+        console.log(req.body);
+        console.log(receiver);
+        accountModel.findOne("checking_account_number", receiver).then((rows, err) => {
+          if (rows.length <= 0 || err) {
+            res.status(401).json({ msg: "khong tim thay tai khoan nay" });
+            return;
+          }
+          console.log(rows);
           accountModel.updateCheckingMoney(receiver, amount);
           //log
           let transactionHistory = {
@@ -290,19 +298,18 @@ module.exports = {
             message: body.content,
           };
           transactionModel.add(transactionHistory);
-        } else {
-          res.status(400).json({
-            message: "Veri successont have this account",
-            receiver,
-          });
-        }
-
+          res.status(200).json({ msg: "Chuyển tiền thành công " });
+        });
+        break;
       case "ABC":
+        res.status(403).json({ msg: " Ngan hang ABC chua connect" });
+        return;
+        break;
+      default:
+        res.status(403).json({ msg: " Ngan hang lạ chua connect" });
+        return;
+        break;
     }
-
-    return res.status(200).json({
-      message: "Chuyển tiền thành công",
-    });
   },
   add: async function (req, res) {
     try {
