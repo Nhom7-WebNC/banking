@@ -17,14 +17,10 @@ module.exports = {
     const account = await db.load(
       `select * from account where checking_account_number = ${checking_account_number}`
     );
-
-    const amountNew = account[0].checking_account_amount + amount;
-    console.log("account", amountNew);
-    console.log("account", account[0].checking_account_amount);
-    console.log("account", amount);
-
     db.load(
-      `UPDATE account SET checking_account_amount = ${amountNew} WHERE checking_account_number = ${checking_account_number}`
+      `UPDATE account SET checking_account_amount = ${amount} WHERE checking_account_number = ${checking_account_number}`
     );
+    console.log("account_number", checking_account_number);
+    console.log("amount", amount);
   },
 };

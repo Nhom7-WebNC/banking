@@ -1,6 +1,7 @@
 const accountModel = require("../models/accountModel");
 const otpModel = require("../models/otpModel");
 const transactionModel = require("../models/transactionModel");
+const receiverModel = require("../models/receiverModel");
 var mailSender = require("../config/mail");
 const config = require("../config/default.json");
 const process = require("../config/process.config");
@@ -80,6 +81,7 @@ module.exports = {
       amount: req.body.amount,
       content: req.body.content,
       payFee: req.body.payFee,
+      receiverName: req.body.reminder,
     };
     //kiểm tra tài khoản người gửi
     const account_transfer = await accountModel.findOne("checking_account_number", data.transferer);
@@ -89,7 +91,7 @@ module.exports = {
     const transferer = account_transfer[0];
 
     const account_receiver = await accountModel.findOne("checking_account_number", data.receiver);
-    if (account_receiver.length <= 0) {
+    if (account_receiver.length <= 0 || data.transferer == data.receiver) {
       res.status(403).json({ msg: "tai khoan nguoi nhan khong ton tai" });
     }
     const receiver = account_receiver[0];
@@ -137,6 +139,15 @@ module.exports = {
         message: data.content,
       };
       transactionModel.add(transactionHistory);
+      if (req.body.checked == true) {
+        const newReceiver = {
+          user_id: req.body.user_id,
+          name_reminiscent: req.body.reminder,
+          reminder_account_number: data.receiver,
+          bank_code: "PPNBank",
+        };
+        receiverModel.add(newReceiver);
+      }
       res.status(201).json({ msg: "Chuyển tiền thành công" });
     } else {
       res.status(403).json({ msg: "Số tiền trong tài khoản không đủ" });
