@@ -69,7 +69,7 @@ router.get("/admin/manage-employee", admin, adminController.manager);
 
 //thêm nhân viên
 router.post("/admin/create-account", adminController.createAccount);
-router.get("/admin/delete",adminController.delete);
+router.get("/admin/delete/:id",adminController.delete);
 function customer(req, res, next) {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];
