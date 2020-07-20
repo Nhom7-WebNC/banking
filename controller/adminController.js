@@ -3,7 +3,7 @@ const bcrypt = require("bcryptjs");
 module.exports = {
     manager: async function(req,res,next) {
         await userModel.findOne("role_name","employee").then((rows)=>{
-            console.log(rows);
+           
             res.status(200).json({data: rows});
 
         })
@@ -45,12 +45,17 @@ module.exports = {
           }
         });
       },
-    delete: function(req,res,next){
-      console.log("afdsfasdfsafsdfasfd")
+    delete: async function(req,res,next){
+      console.log("afdsfasdfsafsdfasfd "+ req.params.id);
         const entity = {
             id: req.params.id,
         }
-        //userModel.delete(entity)
+        await userModel.delete(entity)
+        await userModel.findOne("role_name","employee").then((rows)=>{
+          
+          res.status(200).json({data: rows});
+
+      })
     },
     update: async function (req,res,next){
         
