@@ -13,7 +13,8 @@ module.exports = {
     return db.delete(entity, "user");
   },
   updateByOne: (field, value, entity) => {
-    return db.update("user", field, id, entity);
+    
+    return db.update("user", field, value, entity);
   },
 };
 //ssd*dd

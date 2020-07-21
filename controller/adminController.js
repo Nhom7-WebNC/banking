@@ -46,12 +46,39 @@ module.exports = {
       }
     });
   },
-  delete: function (req, res, next) {
-    console.log("afdsfasdfsafsdfasfd");
-    const entity = {
-      id: req.params.id,
-    };
-    //userModel.delete(entity)
+  delete: async function(req,res,next){
+    
+      const entity = {
+          id: req.params.id,
+      }
+      //userModel.delete(entity)
+      await userModel.delete(entity)
+      await userModel.findOne("role_name", "employee").then((rows) => {
+       
+        res.status(200).json({ data: rows });
+      });
   },
-  update: async function (req, res, next) {},
+  update: async function (req, res, next) {
+    
+    const id =req.body.id;
+    console.log("hihihihihi",id);
+    const newUserMysql = {
+      
+      username: req.body.username,
+      name: req.body.name,
+      phone_number: req.body.phone_number,
+      email: req.body.email,
+      birthday: req.body.birthday,
+      address: req.body.address,
+      gender: req.body.gender,
+      personal_number: req.body.personal_number,
+    };
+    await userModel.updateByOne("id",id,newUserMysql);
+
+    await userModel.findOne("role_name", "employee").then((rows) => {
+      console.log(rows);
+      res.status(200).json({ data: rows });
+    });
+
+  },
 };

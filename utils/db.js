@@ -11,5 +11,6 @@ module.exports = {
 
   update: (tableName, idField, id, entity) =>
     pool_query(`update ${tableName} set ? where ${idField} = ${id} `, entity),
+    
   delete: (condition, tableName) => pool_query(`delete from ${tableName} where ? `, condition),
 };
