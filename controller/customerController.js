@@ -210,7 +210,7 @@ module.exports = {
             .send(body)
             .set(headers)
             .end((err, result) => {
-              accountModel.updateCheckingMoney(transferer, 0 - amount);
+              accountModel.updateCheckingMoney(transferer, row.checking_account_amount - amount);
               //log
               //history log
               let transactionHistory = {
@@ -225,7 +225,7 @@ module.exports = {
                 message: body.content,
               };
               transactionModel.add(transactionHistory);
-              res.status(200).json(result.text);
+              res.status(200).json(result);
             });
         } else {
           res.status(400).json({
@@ -417,12 +417,14 @@ module.exports = {
     console.log("url", `${config.auth.apiRoot}/bank-detail`);
 
     superagent
-      .get(`${config.auth.apiRoot}/bank-detail`)
+      .post(`${config.auth.apiRoot}/bank-detail`)
       .send(body)
       .set(headers)
       .end((err, result) => {
         // console.log(result.res.text);
-        res.status(200).json({ account_number: req.body.account_number, name: JSON.parse(result.res.text).name });
+        // res.status(200).json({ account_number: req.body.account_number, name: JSON.parse(result.res.text).name });
+        console.log(result);
+        res.status(200).json({ result });
       });
   },
 };
