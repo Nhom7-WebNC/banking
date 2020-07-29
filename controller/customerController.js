@@ -199,38 +199,42 @@ module.exports = {
     const headers = { ts, bank_code, sig };
     const { content, amount, transferer, receiver, payFee } = req.body;
     await accountModel.findOne("checking_account_number", transferer).then((rows) => {
+      console.log(rows);
       row = rows[0];
-      console.log(row.checking_account_amount);
+      if (rows.length < 1) {
+        res.status(400).json({ msg: "tài khoản không tồn tại" });
+      } else {
+        if (row.checking_account_amount > amount) {
+          superagent
+            .post(`${config.auth.apiRoot}/money-transfer`)
+            .send(body)
+            .set(headers)
+            .end((err, result) => {
+              accountModel.updateCheckingMoney(transferer, 0 - amount);
+              //log
+              //history log
+              let transactionHistory = {
+                sender_account_number: body.transferer,
+                sender_bank_code: bank_code,
+                receiver_account_number: body.receiver,
+                //don't have bankcode of receiver
+                receiver_bank_code: "",
+                amount: body.amount,
+                transaction_fee: 5000,
+                log: body.transferer + " đã gửi " + body.amount + " cho " + body.receiver,
+                message: body.content,
+              };
+              transactionModel.add(transactionHistory);
+              res.status(200).json(result.text);
+            });
+        } else {
+          res.status(400).json({
+            message: "Tài khoản không đủ tiền",
+            receiver,
+          });
+        }
+      }
     });
-    if (row.checking_account_amount > amount) {
-      superagent
-        .post(`${config.auth.apiRoot}/money-transfer`)
-        .send(body)
-        .set(headers)
-        .end((err, result) => {
-          accountModel.updateCheckingMoney(transferer, 0 - amount);
-          //log
-          //history log
-          let transactionHistory = {
-            sender_account_number: body.transferer,
-            sender_bank_code: bank_code,
-            receiver_account_number: body.receiver,
-            //don't have bankcode of receiver
-            receiver_bank_code: "",
-            amount: body.amount,
-            transaction_fee: 5000,
-            log: body.transferer + " đã gửi " + body.amount + " cho " + body.receiver,
-            message: body.content,
-          };
-          transactionModel.add(transactionHistory);
-          res.status(200).json(result.text);
-        });
-    } else {
-      res.status(400).json({
-        message: "Tài khoản không đủ tiền",
-        receiver,
-      });
-    }
   },
   receive: async function (req, res) {
     const { ts, bank_code, sig } = req.headers;
@@ -417,7 +421,7 @@ module.exports = {
       .send(body)
       .set(headers)
       .end((err, result) => {
-        console.log(result.res.text);
+        // console.log(result.res.text);
         res.status(200).json({ account_number: req.body.account_number, name: JSON.parse(result.res.text).name });
       });
   },
