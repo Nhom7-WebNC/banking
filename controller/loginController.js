@@ -2,7 +2,8 @@ var express = require("express");
 var router = express.Router();
 const userModel = require("../models/userModel");
 const accountModel = require("../models/accountModel");
-
+var nodemailer = require("nodemailer");
+var mailSender = require("../config/mail");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const config = require("../config/default.json");
@@ -155,6 +156,7 @@ module.exports = {
           res.status(403).json({ msg: "tai khoan khong ton tai" });
         }
         const account = row[0];
+        console.log(account.otp_code);
         if (otp == account.otp_code) {
           const passwordRandom = getRandomInt(1, 99999).toString();
 
@@ -163,7 +165,8 @@ module.exports = {
               const passwordHash = hash;
               console.log(passwordRandom);
               console.log(hash);
-              const a = await userModel.updateByOne("password", hash, "username", username).then((rows) => {
+              user.password = hash;
+              const a = await userModel.updateByOne("id", user.id, user).then((rows) => {
                 console.log("rows", rows);
               });
               let transporter = nodemailer.createTransport(mailSender);
