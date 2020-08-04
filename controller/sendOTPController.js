@@ -1,7 +1,4 @@
-var express = require("express");
-var router = express.Router();
 const sendOTPModel = require("../models/otpModel");
-var nodeoutlook = require("nodejs-nodemailer-outlook");
 var nodemailer = require("nodemailer");
 var mailSender = require("../config/mail");
 const accountModel = require("../models/accountModel");

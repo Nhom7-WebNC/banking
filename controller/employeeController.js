@@ -77,7 +77,7 @@ module.exports = {
       });
     });
 
-    activeTab1.length && activeTab0.length
+    activeTab1.length || activeTab0.length
       ? res.status(200).json({ data: { activeTab0: activeTab0, activeTab1: activeTab1 } })
       : res.status(401).json({ msg: "Tài khoản chưa có giao dịch" });
 

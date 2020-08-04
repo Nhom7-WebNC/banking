@@ -9,7 +9,7 @@ const jwt = require("jsonwebtoken");
 const employeeController = require("../controller/employeeController");
 const transactionController = require("../controller/transactionController");
 const receiverListController = require("../controller/receiverListController");
-const debtReminderController = require("../controller/debtReminderController");
+const debtController = require("../controller/debtReminderController");
 const config = require("../config/default.json");
 const adminController = require("../controller/adminController");
 
@@ -30,25 +30,33 @@ router.get("/customers/infoAccount", customer, customerController.infoAccount);
 router.post("/customers/getAccount", customer, customerController.getAccount);
 router.post("/customers/sendOTP", customer, sendOTPController.sendOTP);
 router.post("/customers/getReceiverList", customer, receiverListController.getById);
-router.post("/customers/transferSameBank", customer, customerController.TransferSameBank);
-router.get("/customers/TUBBankDetail", customer, customerController.partnerBankDetail);
-router.post("/customers/transfer", customer, customerController.TransferOtherBank);
+router.post("/customers/transferSameBank", customer, transactionController.TransferSameBank);
+router.post("/customers/partnerBankDetail", customer, transactionController.partnerBankDetail);
+router.post("/customers/transferOtherBank", customer, transactionController.TransferOtherBank);
 router.post("/customers/add-receiver", customer, receiverListController.add);
 
-router.post("/accounts/receive", customerController.receive);
-router.post("/accounts/PPNBankDetail", customerController.myBankDetail);
+//PGP bank
+router.post("/accounts/receive", transactionController.receive);
+router.post("/accounts/PPNBankDetail", transactionController.myBankDetail);
 
 //login, đổi mk, quên mật khẩu
 router.post("/auth/forgotPassword", loginController.forgotPassword);
 router.post("/auth/changePassword", loginController.changePassword);
 router.post("/login", loginController.login);
 router.post("/login/getToken", loginController.getToken);
+router.get("/generatePGP", customerController.generatePGP);
 
 //sửa thông tin nhân viên
 router.get("/admin/manage-employee", admin, adminController.manager);
 router.post("/admin/create-account", adminController.createAccount);
 router.get("/admin/delete/:id", adminController.delete);
 router.post("/admin/update", adminController.update);
+
+//nhắc nợ
+router.post("/customers/create-debt", customer, debtController.createDebt);
+router.post("/customers/get-debt", customer, debtController.getListDebt);
+router.post("/customers/cancel-debt", customer, debtController.cancelDebt);
+router.post("/customers/pay-debt", customer, debtController.payDebt);
 
 function customer(req, res, next) {
   const authHeader = req.headers["authorization"];
