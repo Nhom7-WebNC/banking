@@ -125,7 +125,7 @@ module.exports = {
                 var user = rows[0];
                 user.password = hash;
                 console.log("userpassword", user.password);
-                const a = await userModel.updateByOne("password", hash, "username", username).then((rows) => {
+                const a = await userModel.updateByOne("id", user.id, user).then((rows) => {
                   console.log("rows", rows);
                 });
 

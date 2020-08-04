@@ -10,7 +10,7 @@ module.exports = {
     }, 2000);
   },
   createDebt: async function (req, res, next) {
-    if (req.body.receiver == req.body.sender || !Number.isInteger(req.body.amount)) {
+    if (req.body.receiver == req.body.sender || req.body.amount < 0) {
       return res.status(400).json({ msg: "Nhập sai thông tin , vui lòng nhập lại" });
     }
     const newDebt = {
