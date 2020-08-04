@@ -10,6 +10,9 @@ module.exports = {
     }, 2000);
   },
   createDebt: async function (req, res, next) {
+    if (req.body.receiver == req.body.sender || !Number.isInteger(req.body.amount)) {
+      return res.status(400).json({ msg: "Nhập sai thông tin , vui lòng nhập lại" });
+    }
     const newDebt = {
       creditor_account_number: req.body.sender,
       debtor_account_number: req.body.receiver,
@@ -19,7 +22,7 @@ module.exports = {
     };
 
     debtModel.add(newDebt);
-    return res.status(200).json("Tao nhac no thanh cong");
+    return res.status(200).json("Tạo nhắc nợ thành công");
   },
   getListDebt: async function (req, res, next) {
     var activeTab0 = [];
