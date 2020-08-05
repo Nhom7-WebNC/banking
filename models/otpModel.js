@@ -1,4 +1,5 @@
 const db = require("../utils/db");
+const userModel = require("../models/userModel");
 
 module.exports = {
   add: (entity) => {

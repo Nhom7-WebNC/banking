@@ -61,7 +61,6 @@ module.exports = {
   getTransaction: async function (req, res, next) {
     var activeTab0 = [];
     var activeTab1 = [];
-    console.log("hh");
 
     var accountNumber = req.params.accountNumber;
     await transactionModel.findByAccountNumber(accountNumber).then((rows) => {

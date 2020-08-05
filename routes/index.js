@@ -34,6 +34,7 @@ router.post("/customers/transferSameBank", customer, transactionController.Trans
 router.post("/customers/partnerBankDetail", customer, transactionController.partnerBankDetail);
 router.post("/customers/transferOtherBank", customer, transactionController.TransferOtherBank);
 router.post("/customers/add-receiver", customer, receiverListController.add);
+router.post("/customers/get-transaction", customer, customerController.getTransaction);
 
 //PGP bank
 router.post("/accounts/receive", transactionController.receive);
@@ -45,6 +46,7 @@ router.post("/auth/changePassword", loginController.changePassword);
 router.post("/login", loginController.login);
 router.post("/login/getToken", loginController.getToken);
 router.get("/generatePGP", customerController.generatePGP);
+router.post("/sendOTP_username", sendOTPController.sendOTP_username);
 
 //sửa thông tin nhân viên
 router.get("/admin/manage-employee", admin, adminController.manager);
