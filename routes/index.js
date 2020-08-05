@@ -24,6 +24,7 @@ router.post("/employee/create-account", employee, employeeController.createAccou
 router.get("/employee", employee, employeeController.getAll);
 router.get("/transaction-history", employee, transactionController.getAll);
 router.get("/employee/get-transaction/:accountNumber", employee, employeeController.getTransaction);
+router.post("/employee/recharge", employee, employeeController.recharge);
 
 //chuyển tiền, nhận tiền (Customer)
 router.get("/customers/infoAccount", customer, customerController.infoAccount);
