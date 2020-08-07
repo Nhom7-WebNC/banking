@@ -10,6 +10,7 @@ const config = require("../config/default.json");
 const auth = require("../middlewares/auth.mdw");
 const customerController = require("./customerController");
 module.exports = {
+  
   getToken: function (req, res) {
     console.log("getTOken");
     const refreshToken = req.body.refreshToken;

@@ -5,13 +5,34 @@ var nodemailer = require("nodemailer");
 var mailSender = require("../config/mail");
 module.exports = {
   payDebt: async function (req, res, next) {
-    setTimeout(function () {
-      console.log("run !");
-    }, 2000);
+    const { id } = req.body;
+    const debts = await debtModel.findOne("id", id);
+    const debt = debts[0];
+    const creditors = accountModel.findOne("checking_account_number", debt.creditor_account_number);
+    const creditor = creditors[0];
+    const debtors = accountModel.findOne("checking_account_number", debt.debtor_account_number);
+    const debtor = debtors[0];
+    if (debtor.checking_account_amount < debt.amount) {
+      res.status(400).json({ msg: "Tài khoản của bạn không đủ để thanh toán nợ này" });
+    } else {
+      accountModel.updateCheckingMoney(debt.debtor_account_number, debtor.checking_account_amount - debt.amount);
+      accountModel.updateCheckingMoney(
+        debt.creditor_account_number,
+        creditor.checking_account_amount + debt.amount
+      );
+      debt.status = 1;
+      await debtModel.updateByOne("id", id, debt);
+      res.status(200).json({ msg: "Thanh toán nợ thành công" });
+    }
   },
   createDebt: async function (req, res, next) {
     if (req.body.receiver == req.body.sender || req.body.amount < 0) {
       return res.status(400).json({ msg: "Nhập sai thông tin , vui lòng nhập lại" });
+    } else {
+      const accounts = await accountModel.findOne("checking_account_number", req.body.receiver);
+      if (accounts.length < 1) {
+        return res.status(400).json({ msg: "Tài khoản không tồn tại" });
+      }
     }
     const newDebt = {
       creditor_account_number: req.body.sender,
