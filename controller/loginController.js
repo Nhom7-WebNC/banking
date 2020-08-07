@@ -112,8 +112,10 @@ module.exports = {
   },
 
   changePassword: function (req, res) {
-    console.log("reqbody", req.body);
-    const { username, oldPassword, newPassword, newPassword2 } = req.body;
+    // const { username, oldPassword, newPassword, newPassword2 } = JSON.stringify(req.body);
+    const { username} = req.body;
+    const { oldPassword, newPassword, newPassword2 } =(req.body);
+
     userModel.findOne("username", username).then((rows, err) => {
       if (rows.length <= 0) {
         res.status(401).json({ msg: "đăng nhập không thành công" });
@@ -131,7 +133,7 @@ module.exports = {
                   console.log("rows", rows);
                 });
 
-                return res.status(201).json({ msg: "doi mat khau thanh cong" });
+                return res.status(201).json({ msg: "Đổi mật khẩu thành công" });
               });
             });
           } else {
@@ -149,12 +151,12 @@ module.exports = {
     const { username, otp } = req.body;
     userModel.findOne("username", username).then((rows) => {
       if (rows.length <= 0) {
-        res.status(403).json({ msg: "k co username nay" });
+        res.status(403).json({ msg: "không tồn tại username nay" });
       }
       const user = rows[0];
       accountModel.findOne("user_id", user.id).then((row) => {
         if (rows.length <= 0) {
-          res.status(403).json({ msg: "tai khoan khong ton tai" });
+          res.status(403).json({ msg: "tài khoản không tồn tại" });
         }
         const account = row[0];
         console.log(account.otp_code);
