@@ -8,20 +8,43 @@ module.exports = {
     const { id } = req.body;
     const debts = await debtModel.findOne("id", id);
     const debt = debts[0];
-    const creditors = accountModel.findOne("checking_account_number", debt.creditor_account_number);
+    const creditors = await accountModel.findOne("checking_account_number", debt.creditor_account_number);
     const creditor = creditors[0];
-    const debtors = accountModel.findOne("checking_account_number", debt.debtor_account_number);
+    const debtors = await accountModel.findOne("checking_account_number", debt.debtor_account_number);
     const debtor = debtors[0];
+    console.log("debt", debt);
     if (debtor.checking_account_amount < debt.amount) {
       res.status(400).json({ msg: "Tài khoản của bạn không đủ để thanh toán nợ này" });
     } else {
       accountModel.updateCheckingMoney(debt.debtor_account_number, debtor.checking_account_amount - debt.amount);
-      accountModel.updateCheckingMoney(
-        debt.creditor_account_number,
-        creditor.checking_account_amount + debt.amount
-      );
+      const total = creditor.checking_account_amount + debt.amount;
+      accountModel.updateCheckingMoney(debt.creditor_account_number, total);
       debt.status = 1;
       await debtModel.updateByOne("id", id, debt);
+      const partnerUser = await userModel.findOne("id", creditor.user_id);
+      let email = partnerUser[0].email;
+      console.log("email", email);
+      let transporter = nodemailer.createTransport(mailSender);
+      var text_mail =
+        "Account number " +
+        debt.debtor_account_number +
+        " have just pay debt reminder created by you with amount : " +
+        debt.amount +
+        " your current amount : " +
+        total;
+      let mailOptions = {
+        to: email,
+        subject: "PPNBank pay debt ",
+        text: text_mail,
+      };
+      //
+      await transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          return res.status(400);
+        }
+        console.log("Message %s sent: %s", info.messageId, info.response);
+      });
+
       res.status(200).json({ msg: "Thanh toán nợ thành công" });
     }
   },
@@ -48,21 +71,23 @@ module.exports = {
   getListDebt: async function (req, res, next) {
     var activeTab0 = [];
     var activeTab1 = [];
-    console.log("hh");
+    // console.log("hh");
 
     const accountNumber = req.body.account_number;
-    console.log(accountNumber);
+    // console.log(accountNumber);
 
     await debtModel.findByAccountNumber(accountNumber).then((rows) => {
-      console.log("rows", rows);
+      // console.log("rows", rows);
       rows.map((row) => {
-        if (row.creditor_account_number == accountNumber) {
-          //console.log(row);
-          activeTab0.push(row);
-        }
-        if (row.debtor_account_number == accountNumber) {
-          //console.log(row);
-          activeTab1.push(row);
+        if (row.status < 1) {
+          if (row.creditor_account_number == accountNumber) {
+            //console.log(row);
+            activeTab0.push(row);
+          }
+          if (row.debtor_account_number == accountNumber) {
+            //console.log(row);
+            activeTab1.push(row);
+          }
         }
       });
     });

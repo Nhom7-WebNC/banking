@@ -1,6 +1,8 @@
 const accountModel = require("../models/accountModel");
 const otpModel = require("../models/otpModel");
 const transactionModel = require("../models/transactionModel");
+const debtModel = require("../models/debtReminderModel");
+
 const receiverModel = require("../models/receiverModel");
 var mailSender = require("../config/mail");
 const config = require("../config/default.json");
@@ -40,17 +42,12 @@ const confirm = (req) => {
     return 1;
   }
 
-  if (
-    bank_code != config.auth.partnerRSA &&
-    bank_code != config.auth.partnerPGP
-  ) {
+  if (bank_code != config.auth.partnerRSA && bank_code != config.auth.partnerPGP) {
     console.log("return 2");
     return 2;
   }
 
-  const comparingSign = hash.MD5(
-    ts + JSON.stringify(req.body) + config.auth.secret
-  );
+  const comparingSign = hash.MD5(ts + JSON.stringify(req.body) + config.auth.secret);
   // const comparingSign = "8685a1e0c9a64edb138216e66188fb17";
   if (sig != comparingSign) {
     console.log(comparingSign);
@@ -75,11 +72,9 @@ module.exports = {
     }
     const accounts = await accountModel.findOne("user_id", user[0].id);
     if (accounts.length <= 0) {
-      res
-        .status(400)
-        .json({
-          msg: "username " + req.body.username + " chua co tai khoan nao",
-        });
+      res.status(400).json({
+        msg: "username " + req.body.username + " chua co tai khoan nao",
+      });
       return;
     }
     account = accounts[0];
@@ -92,34 +87,28 @@ module.exports = {
 
   //------------------------------lấy info account -------------------------------------------------
   infoAccount: async function (req, res) {
-    const userId = userModel
-      .findOne("username", req.body.username)
-      .then((rows) => {
-        console.log("userid", rows[0].id);
+    const userId = userModel.findOne("username", req.body.username).then((rows) => {
+      console.log("userid", rows[0].id);
 
-        if (rows.length <= 0) {
-          return res.status(401).json({ msg: "Nhap sai ten" });
+      if (rows.length <= 0) {
+        return res.status(401).json({ msg: "Nhap sai ten" });
+      }
+      const account = accountModel.findOne("user_id", rows[0].id).then((rows2) => {
+        const row = rows2[0];
+        console.log("userid", row);
+
+        if (!row) {
+          return res.status(401).json({ msg: "nguoi dung chua tao tai khoan" });
         }
-        const account = accountModel
-          .findOne("user_id", rows[0].id)
-          .then((rows2) => {
-            const row = rows2[0];
-            console.log("userid", row);
 
-            if (!row) {
-              return res
-                .status(401)
-                .json({ msg: "nguoi dung chua tao tai khoan" });
-            }
-
-            const data = {
-              checking_account_number: row.checking_account_number,
-              checking_account_amount: row.checking_account_amount,
-            };
-            console.log(data);
-            res.status(200).json({ data: data });
-          });
+        const data = {
+          checking_account_number: row.checking_account_number,
+          checking_account_amount: row.checking_account_amount,
+        };
+        console.log(data);
+        res.status(200).json({ data: data });
       });
+    });
   },
   //------------------------------lấy info account -------------------------------------------------
 
@@ -128,9 +117,7 @@ module.exports = {
       const rows = await userModel.findOne("id", req.body.user_id);
 
       if (rows.length == 0) {
-        return res
-          .status(403)
-          .send({ message: `No user has id ${req.body.user_id}` });
+        return res.status(403).send({ message: `No user has id ${req.body.user_id}` });
       } else {
         const newAccount = {
           checking_account_number: "23050000" + req.body.user_id,
@@ -161,12 +148,7 @@ module.exports = {
       userid: "User McTester (Born 1979) <user@example.com>",
       primary: {
         nbits: 4096,
-        flags:
-          F.certify_keys |
-          F.sign_data |
-          F.auth |
-          F.encrypt_comm |
-          F.encrypt_storage,
+        flags: F.certify_keys | F.sign_data | F.auth | F.encrypt_comm | F.encrypt_storage,
         expire_in: 0, // never expire
       },
       subkeys: [
@@ -209,9 +191,16 @@ module.exports = {
   getTransaction: async function (req, res, next) {
     var activeTab0 = [];
     var activeTab1 = [];
-    const accountNumber = req.body.accountNumber;
-    // console.log(accountNumber);
+    var activeTab2 = [];
 
+    const accountNumber = req.body.accountNumber;
+    await debtModel.findByAccountNumber(accountNumber).then((rows) => {
+      rows.map((row) => {
+        if (row.status >= 1) {
+          activeTab2.push(row);
+        }
+      });
+    });
     await transactionModel.findByAccountNumber(accountNumber).then((rows) => {
       rows.map((row) => {
         if (row.receiver_account_number == accountNumber) {
@@ -226,9 +215,7 @@ module.exports = {
     });
 
     activeTab1.length || activeTab0.length
-      ? res
-          .status(200)
-          .json({ data: { activeTab0: activeTab0, activeTab1: activeTab1 } })
+      ? res.status(200).json({ data: { activeTab0: activeTab0, activeTab1: activeTab1, activeTab2: activeTab2 } })
       : res.status(401).json({ msg: "Tài khoản chưa có giao dịch" });
 
     // res.status(200).json({data: activeTab1})

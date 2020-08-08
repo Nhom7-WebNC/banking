@@ -50,7 +50,7 @@ module.exports = {
     //Lấy account_number từ username
     const users = await userModel.findOne("username", req.body.username);
     const user = users[0];
-
+    
     const accounts = await  accountModel.findOne("user_id", user.id);
     const account = accounts[0];
     console.log(account);
