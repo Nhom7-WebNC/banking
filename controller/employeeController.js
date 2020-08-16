@@ -70,11 +70,9 @@ module.exports = {
     await transactionModel.findByAccountNumber(accountNumber).then((rows) => {
       rows.map((row) => {
         if (row.receiver_account_number == accountNumber) {
-          //console.log(row);
           activeTab0.push(row);
         }
         if (row.sender_account_number == accountNumber) {
-          //console.log(row);
           activeTab1.push(row);
         }
       });
@@ -86,7 +84,6 @@ module.exports = {
           .json({ data: { activeTab0: activeTab0, activeTab1: activeTab1 } })
       : res.status(401).json({ msg: "Tài khoản chưa có giao dịch" });
 
-    // res.status(200).json({data: activeTab1})
   },
   recharge: async function (req, res, next) {
     const data = {

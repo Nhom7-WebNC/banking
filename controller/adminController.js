@@ -82,65 +82,49 @@ module.exports = {
     });
   },
 
-  getTransaction_byTime: async function (req, res, next) {
+  //------------------------------lịch sử giao dịch---------------------------------------
+  getTransaction: async function (req, res, next) {
     var activeTab0 = [];
 
+    const bank_code = req.body.bank_code;
     const dateStart = req.body.dateStart;
     const dateEnd = req.body.dateEnd;
+    // console.log(bank_code.dateStart.dateEnd);
+    console.log(bank_code);
+    console.log(dateStart);
+    console.log(dateEnd);
+    var a = new Date(dateStart);
+    var b = new Date(dateEnd);
 
-    await transactionModel.findByTime(dateStart,dateEnd).then((rows) => {
-      rows.map((row) => {
-        activeTab0.push(row);
-      });
-    });
+    if (a > b) {
+      res
+        .status(401)
+        .json({ msg: "Ngày bắt đầu không được lớn hơn ngày kết thúc" });
+    }
+    else if (bank_code == "" || dateStart == "" || dateEnd == "") {
+      res.status(401).json({ msg: "Nhập thiếu thông tin" });
+    } 
+    else {
+      if (bank_code == "all") {
+        await transactionModel.findByTime(dateStart, dateEnd).then((rows) => {
+          rows.map((row) => {
+            activeTab0.push(row);
+          });
+        });
+      } else {
+        await transactionModel.findByTime(dateStart, dateEnd).then((rows) => {
+          rows.map((row) => {
+            if (row.sender_bank_code == bank_code || row.receiver_bank_code == bank_code)
+            {
+              activeTab0.push(row);
+            }
+          });
+        });
+      }
 
-    
-    activeTab0.length
-      ? res.status(200).json({
-          data: {
-            activeTab0: activeTab0,
-          },
-        })
-      : res.status(401).json({ msg: "Chưa có giao dịch" });
-
-  },
-
-  getTransaction_all: async function (req, res, next) {
-    var activeTab1 = [];
-
-    await transactionModel.findAll().then((rows) => {
-      rows.map((row) => {
-        activeTab1.push(row);
-      });
-    });
-
-    
-    activeTab1.length
-      ? res.status(200).json({
-          data: {
-            activeTab1: activeTab1,
-          },
-        })
-      : res.status(401).json({ msg: "Chưa có giao dịch" });
-
-  },
-
-  getTransaction_byBankcode: async function (req, res, next) {
-    var activeTab2 = [];
-    const bank_code = req.body.bank_code;
-
-    await transactionModel.findByBankcode(bank_code).then((rows) => {
-      rows.map((row) => {
-        activeTab2.push(row);
-      });
-    });
-
-    activeTab2.length
-      ? res.status(200).json({
-          data: {            
-            activeTab2: activeTab2,
-          },
-        })
-      : res.status(401).json({ msg: "Chưa có giao dịch" });
+      activeTab0.length
+        ? res.status(200).json({ data: { activeTab0: activeTab0 } })
+        : res.status(401).json({ msg: "Không có giao dịch" });
+    }
   },
 };

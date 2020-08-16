@@ -4,6 +4,9 @@ module.exports = {
   add: (entity) => {
     return db.add(entity, "transaction_history");
   },
+  findOne: (field, value) => {
+    return db.load(`select * from transaction_history where ${field} = '${value}'`);
+  },
   findAll: () => db.load(`select * from transaction_history`),
   findByAccountNumber: (account_number) =>
     db.load(
@@ -21,10 +24,10 @@ module.exports = {
     ),
   findByBankcode: (bank_code) =>
     db.load(
-      `select * from transaction_history where (sender_bank_code=${bank_code} or receiver_bank_code=${bank_code})`
+      `select * from transaction_history where sender_bank_code='${bank_code}' or receiver_bank_code='${bank_code}'`
     ),
-  findByTime: (dateStart,dateEnd) =>
+  findByTime: (dateStart, dateEnd) =>
     db.load(
-      `select * from transaction_history where created_at BETWEEN ${dateStart} AND ${dateEnd}`
+      `select * from transaction_history where created_at BETWEEN '${dateStart}' AND '${dateEnd}'`
     ),
 };
