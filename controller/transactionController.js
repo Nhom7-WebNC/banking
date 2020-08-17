@@ -21,13 +21,14 @@ var router = express.Router();
 module.exports = {
   partnerBankDetail: async function (req, res) {
     const body = req.body;
+    console.log("body", body);
     const bank_code = config.auth.bankcode;
 
     const ts = Date.now();
     const sig = hash.MD5(bank_code + ts + JSON.stringify(body) + config.auth.secretPartnerRSA);
     const headers = { bank_code, sig, ts };
 
-    const partner = req.headers.partner_bank;
+    const partner = req.body.partner_bank;
 
     switch (partner) {
       case "TUB":
@@ -36,8 +37,12 @@ module.exports = {
           .send(body)
           .set(headers)
           .end((err, result) => {
-            const resu = JSON.parse(result.text);
-            res.status(200).json({ resu });
+            if (err) {
+              return res.status(401).json({ msg: "khong tim thay tai khoan nay" });
+            }
+            console.log(result);
+            const resu = JSON.parse(result.text).name;
+            return res.status(201).json({ resu });
           });
         break;
       case "partner34":
@@ -54,12 +59,18 @@ module.exports = {
             "x-signature": hash2,
           },
         };
+        var num = parseInt(body.account_number);
+
         axios
-          .get("https://banking34.herokuapp.com/api/user/" + body.accNum, configAxios)
+          .get("https://banking34.herokuapp.com/api/user/" + num, configAxios)
           .then(function (response) {
-            console.log(response.data);
-            const result = response.data;
-            return res.status(200).json({ result });
+            const resu = response.data.fullname;
+            console.log("resu",resu);
+
+            if(!resu  ){
+              return res.status(400).json({msg:"Nhập sai stk"});
+            }
+            return res.status(201).json({ resu });
           })
           .catch(function (error) {
             console.log(error.response);
@@ -67,12 +78,14 @@ module.exports = {
           });
         break;
       default:
+        return res.status(400);
         break;
     }
   },
 
   TransferOtherBank: async function (req, res) {
-    const partner_bank = req.headers.partner_bank;
+    console.log("body", req.body);
+    const partner_bank = req.body.partner_bank;
     switch (partner_bank) {
       case "TUB":
         const privateKeyArmored = fs.readFileSync("my_rsa_private.key", "utf8");
@@ -92,57 +105,56 @@ module.exports = {
           if (rows.length < 1) {
             res.status(400).json({ msg: "tài khoản không tồn tại" });
           } else {
-            if (row.checking_account_amount > amount) {
-              superagent
-                .post(`${config.auth.apiRoot}/money-transfer`)
-                .send(body2)
-                .set(headers)
-                .end((err, result) => {
-                  accountModel.updateCheckingMoney(transferer, row.checking_account_amount - amount);
-                  //log
-                  //history log
-                  let transactionHistory = {
-                    sender_account_number: body2.transferer,
-                    sender_bank_code: bank_code,
-                    receiver_account_number: body2.receiver,
-                    //don't have bankcode of receiver
-                    receiver_bank_code: "",
-                    amount: body2.amount,
-                    transaction_fee: 5000,
-                    log: body2.transferer + " đã gửi " + body2.amount + " cho " + body2.receiver,
-                    message: body2.content,
-                    status: 0,
-                  };
-                  transactionModel.add(transactionHistory);
-                  const resu = JSON.parse(result.text);
-                  res.status(200).json({ resu });
-                });
-            } else {
-              res.status(400).json({
-                message: "Tài khoản không đủ tiền",
-                receiver,
+            superagent
+              .post(`${config.auth.apiRoot}/money-transfer`)
+              .send(body2)
+              .set(headers)
+              .end((err, result) => {
+                if (err) {
+                  console.log("err", err);
+                  return res.status(400).json({ msg: err.message });
+                }
+                accountModel.updateCheckingMoney(transferer, row.checking_account_amount - amount);
+                //log
+                //history log
+                let transactionHistory = {
+                  sender_account_number: body2.transferer,
+                  sender_bank_code: bank_code,
+                  receiver_account_number: body2.receiver,
+                  //don't have bankcode of receiver
+                  receiver_bank_code: partner_bank,
+                  amount: body2.amount,
+                  transaction_fee: 5000,
+                  log: body2.transferer + " đã gửi " + body2.amount + " cho " + body2.receiver,
+                  message: body2.content,
+                  type: 0,
+                };
+                transactionModel.add(transactionHistory);
+                const resu = JSON.parse(result.text);
+                res.status(200).json({ resu });
               });
-            }
           }
         });
         break;
       case "partner34":
         const time = moment().valueOf();
         const body = JSON.stringify(req.body);
+
         const hash3 = crypto
           .createHash("sha256")
           .update(time + body + config.auth.secret)
           .digest("hex");
         const code = config.auth.bankcode;
-        const data = `${req.body.moneyAmount},${req.body.accNum},${time}`;
+        const accN = parseInt(req.body.accNum);
+        const data = `${req.body.moneyAmount},${accN},${time}`;
         const signature = await signData(data);
         // console.log(signature.split("\r\n").join("\\n"));
-        const rows = await accountModel.findOne("checking_account_number", transferer);
-
+        const rows = await accountModel.findOne("checking_account_number", req.body.transferer);
+        var row="";
         if (rows.length < 1) {
-          res.status(400).json({ msg: "tài khoản không tồn tại" });
+          return res.status(400).json({ msg: "tài khoản không tồn tại" });
         } else {
-          const row = rows[0];
+           row = rows[0];
         }
 
         const configAxios = {
@@ -157,9 +169,8 @@ module.exports = {
         axios
           .post("https://banking34.herokuapp.com/api/transfer/update", postBody, configAxios)
           .then(function (response) {
-            console.log(response.data);
-
-            accountModel.updateCheckingMoney(transferer, row.checking_account_amount - amount);
+            console.log(postBody);
+            accountModel.updateCheckingMoney(req.body.transferer, row.checking_account_amount - req.body.moneyAmount);
             //log
             //history log
             let transactionHistory = {
@@ -172,14 +183,16 @@ module.exports = {
               transaction_fee: 5000,
               log: postBody.transferer + " đã gửi " + postBody.moneyAmount + " cho " + postBody.accNum,
               message: postBody.content,
-              status: 0,
+              type: 0,
             };
             transactionModel.add(transactionHistory);
             return res.status(200).json(response.data);
           })
           .catch(function (error) {
-            console.log(error.response);
-            return res.status(400).send(error.response);
+            console.log("err", error);
+
+            console.log("err2", error.response);
+            return res.status(401).send(error.response);
           });
         break;
       default:
@@ -230,14 +243,6 @@ module.exports = {
           account: req.body.account_number,
           name: rows[0].name,
         };
-        //update Partner_Call_Log
-        const entityUpdateLog1 = {
-          bank_code: req.get("bank_code"),
-          account_number: req.body.account_number,
-          created_at: moment().format("YYYY-MM-DD HH:mm:ss"),
-        };
-
-        // const updatePartnerLog1 = await partnerCallLog.add(entityUpdateLog1);
 
         return res.status(200).send(ret);
       }
@@ -254,77 +259,77 @@ module.exports = {
       content: req.body.content,
       payFee: req.body.payFee,
       receiverName: req.body.reminder,
+      checked: req.body.checked,
     };
+    console.log("data", data);
     //kiểm tra tài khoản người gửi
     const account_transfer = await accountModel.findOne("checking_account_number", data.transferer);
-    if (account_transfer.length <= 0) {
-      res.status(403).json({ msg: "tai khoan nguoi gui khong ton tai" });
-    }
     const transferer = account_transfer[0];
-
     const account_receiver = await accountModel.findOne("checking_account_number", data.receiver);
-    if (account_receiver.length <= 0 || data.transferer == data.receiver) {
-      res.status(403).json({ msg: "tai khoan nguoi nhan khong ton tai" });
-    }
     const receiver = account_receiver[0];
     const transfer_fee = 3000;
-    if (transferer.checking_account_amount > data.amount && data.amount > transfer_fee) {
-      switch (data.payFee) {
-        case "transferer":
-          accountModel.updateCheckingMoney(
-            transferer.checking_account_number,
-            transferer.checking_account_amount - data.amount - transfer_fee
-          );
-          accountModel.updateCheckingMoney(
-            receiver.checking_account_number,
-            receiver.checking_account_amount + data.amount
-          );
-          break;
-        case "receiver":
-          accountModel.updateCheckingMoney(
-            transferer.checking_account_number,
-            transferer.checking_account_amount - data.amount
-          );
-          accountModel.updateCheckingMoney(
-            receiver.checking_account_number,
-            receiver.checking_account_amount + data.amount - transfer_fee
-          );
-          break;
-        default:
-          break;
-      }
-      let transactionHistory = {
-        sender_account_number: transferer.checking_account_number,
-        sender_bank_code: "PPNBank",
-        receiver_account_number: receiver.checking_account_number,
-        //don't have bankcode of receiver
-        receiver_bank_code: "PPNBank",
-        amount: data.amount,
-        transaction_fee: 3000,
-        log:
-          " Chuyển tiền cùng ngân hàng " +
-          transferer.checking_account_number +
-          " đã gửi " +
-          data.amount +
-          " cho " +
+    switch (data.payFee) {
+      case "transferer":
+        accountModel.updateCheckingMoney(
+          transferer.checking_account_number,
+          transferer.checking_account_amount - data.amount - transfer_fee
+        );
+        accountModel.updateCheckingMoney(
           receiver.checking_account_number,
-        message: data.content,
-        status: 0,
-      };
-      transactionModel.add(transactionHistory);
-      if (req.body.checked == true) {
-        const newReceiver = {
-          user_id: req.body.user_id,
-          name_reminiscent: req.body.reminder,
-          reminder_account_number: data.receiver,
-          bank_code: "PPNBank",
-        };
-        receiverModel.add(newReceiver);
-      }
-      res.status(201).json({ msg: "Chuyển tiền thành công" });
-    } else {
-      res.status(403).json({ msg: "Số tiền trong tài khoản không đủ" });
+          receiver.checking_account_amount + data.amount
+        );
+        break;
+      case "receiver":
+        accountModel.updateCheckingMoney(
+          transferer.checking_account_number,
+          transferer.checking_account_amount - data.amount
+        );
+        accountModel.updateCheckingMoney(
+          receiver.checking_account_number,
+          receiver.checking_account_amount + data.amount - transfer_fee
+        );
+        break;
+      default:
+        break;
     }
+    let transactionHistory = {
+      sender_account_number: transferer.checking_account_number,
+      sender_bank_code: "PPNBank",
+      receiver_account_number: receiver.checking_account_number,
+      //don't have bankcode of receiver
+      receiver_bank_code: "PPNBank",
+      amount: data.amount,
+      transaction_fee: 3000,
+      log:
+        " Chuyển tiền cùng ngân hàng " +
+        transferer.checking_account_number +
+        " đã gửi " +
+        data.amount +
+        " cho " +
+        receiver.checking_account_number,
+      message: data.content,
+      type: 0,
+    };
+    transactionModel.add(transactionHistory);
+    if (data.checked == true) {
+      var result = "";
+
+      if (data.receiverName == "") {
+        const rows = await userModel.findOne("id", receiver.user_id);
+        result = rows[0].name;
+      } else {
+        result = data.receiverName;
+      }
+      const newReceiver = {
+        user_id: req.body.user_id,
+        name_reminiscent: result,
+        reminder_account_number: data.receiver,
+        bank_code: "PPNBank",
+      };
+      console.log("newReceiver", newReceiver);
+      receiverModel.add(newReceiver);
+    }
+    return res.status(201).json({ msg: "Chuyển tiền thành công" });
   },
   receive: async function (req, res) {
     const { ts, bank_code, sig } = req.headers;
@@ -383,13 +388,13 @@ module.exports = {
             sender_account_number: body.transferer,
             sender_bank_code: bank_code,
             receiver_account_number: body.receiver,
+            receiver_bank_code: "PPNBank",
             //don't have bankcode of receiver
-            receiver_bank_code: "",
             amount: body.amount,
             transaction_fee: 5000,
             log: body.transferer + " đã gửi " + body.amount + " cho " + body.receiver,
             message: body.content,
-            status: 0,
+            type: 0,
           };
           transactionModel.add(transactionHistory);
           res.status(200).json({ msg: "Chuyển tiền thành công " });
@@ -410,21 +415,20 @@ module.exports = {
             sender_account_number: body.transferer,
             sender_bank_code: bank_code,
             receiver_account_number: body.receiver,
+            receiver_bank_code: "PPNBank",
             //don't have bankcode of receiver
-            receiver_bank_code: "",
             amount: body.amount,
             transaction_fee: 5000,
             log: body.transferer + " đã gửi " + body.amount + " cho " + body.receiver,
             message: body.content,
-            status: 0,
+            type: 0,
           };
           transactionModel.add(transactionHistory);
           res.status(200).json({ msg: "Chuyển tiền thành công " });
         });
         break;
       default:
-        res.status(403).json({ msg: " Ngan hang lạ chua connect" });
-        return;
+        return res.status(403).json({ msg: " Ngân hàng lạ chưa connect" });
         break;
     }
   },
@@ -442,9 +446,7 @@ async function signData(data) {
   const {
     keys: [privateKey],
   } = await openpgp.key.readArmored(privateKeyArmored);
-  console.log("data", data);
   // console.log("private", privateKeyArmored);
-  console.log("private", privateKey);
 
   const a = await privateKey.decrypt(passphrase);
 

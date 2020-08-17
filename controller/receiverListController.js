@@ -19,4 +19,31 @@ module.exports = {
       res.status(200).json({ rows });
     });
   },
+  getAll: async function (req, res, next) {
+    receiverModel.findOne("id", req.body.user_id).then(async (rows, err) => {
+      if (err) {
+        res.status(400).json({ msg: "get All Receiver list have no data" });
+      }
+      res.status(200).json({ rows });
+    });
+  },
+  delete: async function (req, res, next) {
+    const { id } = req.body;
+    const entity = {
+      id: id,
+    };
+    await receiverModel.delete(entity);
+    res.status(201).json({ msg: "Xóa người nhận thành công" });
+  },
+  update: async function (req, res, next) {
+    console.log("body", req.body);
+    const { id, name_reminiscent } = req.body;
+    const rows = await receiverModel.findOne("id", id);
+    const newReceiver = rows[0];
+    console.log("body", newReceiver);
+
+    newReceiver.name_reminiscent = name_reminiscent;
+    await receiverModel.updateByOne("id", id, newReceiver);
+    res.status(201).json({ msg: "Đổi tên thành công" });
+  },
 };

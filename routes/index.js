@@ -30,12 +30,17 @@ router.post("/employee/recharge", employee, employeeController.recharge);
 router.get("/customers/infoAccount", customer, customerController.infoAccount);
 router.post("/customers/getAccount", customer, customerController.getAccount);
 router.post("/customers/sendOTP", customer, sendOTPController.sendOTP);
-router.post("/customers/getReceiverList", customer, receiverListController.getById);
 router.post("/customers/transferSameBank", customer, transactionController.TransferSameBank);
 router.post("/customers/partnerBankDetail", customer, transactionController.partnerBankDetail);
 router.post("/customers/transferOtherBank", customer, transactionController.TransferOtherBank);
 router.post("/customers/add-receiver", customer, receiverListController.add);
 router.post("/customers/get-transaction", customer, customerController.getTransaction);
+
+//receiver List
+router.post("/customers/getReceiverList", customer, receiverListController.getById);
+router.post("/customers/deleteReceiverList", customer, receiverListController.delete);
+router.post("/customers/updateReceiverList", customer, receiverListController.update);
+router.post("/customers/getAllReceiver", customer, receiverListController.getAll);
 
 //PGP bank
 router.post("/accounts/receive", transactionController.receive);
@@ -51,9 +56,9 @@ router.post("/sendOTP_username", sendOTPController.sendOTP_username);
 
 //sửa thông tin nhân viên
 router.get("/admin/manage-employee", admin, adminController.manager);
-router.post("/admin/create-account", adminController.createAccount);
-router.get("/admin/delete/:id", adminController.delete);
-router.post("/admin/update", adminController.update);
+router.post("/admin/create-account", admin, adminController.createAccount);
+router.get("/admin/delete/:id", admin, adminController.delete);
+router.post("/admin/update", admin, adminController.update);
 
 //nhắc nợ
 router.post("/customers/create-debt", customer, debtController.createDebt);
@@ -64,11 +69,8 @@ router.post("/customers/pay-debt", customer, debtController.payDebt);
 function customer(req, res, next) {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];
-  console.log("token", token);
   if (token == null) return res.sendStatus(403);
-  console.log(token);
   jwt.verify(token, "access", (err, resp) => {
-    console.log("user3", resp);
     if (err) return res.sendStatus(403);
 
     if (resp.user.role == "customer") {
@@ -85,9 +87,7 @@ function employee(req, res, next) {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];
   if (token == null) return res.sendStatus(403);
-  console.log(token);
   jwt.verify(token, "access", (err, resp) => {
-    console.log("user3", resp);
     if (err) return res.sendStatus(403);
 
     if (resp.user.role == "employee") {
@@ -103,9 +103,7 @@ function admin(req, res, next) {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];
   if (token == null) return res.sendStatus(403);
-  console.log(token);
   jwt.verify(token, "access", (err, resp) => {
-    console.log("user3", resp);
     if (err) return res.sendStatus(403);
 
     if (resp.user.role == "admin") {
@@ -122,9 +120,7 @@ function authenticateToken(req, res, next) {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];
   if (token == null) return res.sendStatus(401);
-  console.log(token);
   jwt.verify(token, "access", (err, user) => {
-    console.log(user);
     if (err) return res.sendStatus(403);
     // req.user = user;
     next();
