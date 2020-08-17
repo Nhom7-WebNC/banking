@@ -54,7 +54,7 @@ router.get("/admin/manage-employee", admin, adminController.manager);
 router.post("/admin/create-account", adminController.createAccount);
 router.get("/admin/delete/:id", adminController.delete);
 router.post("/admin/update", adminController.update);
-router.get("/admin/transactions",adminController.getTransaction);
+router.post("/admin/transactions",adminController.getTransaction);
 
 //nhắc nợ
 router.post("/customers/create-debt", customer, debtController.createDebt);

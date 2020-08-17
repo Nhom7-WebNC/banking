@@ -85,7 +85,7 @@ module.exports = {
   //------------------------------lịch sử giao dịch---------------------------------------
   getTransaction: async function (req, res, next) {
     var activeTab0 = [];
-
+    console.log(req.body);
     const bank_code = req.body.bank_code;
     const dateStart = req.body.dateStart;
     const dateEnd = req.body.dateEnd;
