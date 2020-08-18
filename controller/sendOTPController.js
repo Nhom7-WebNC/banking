@@ -15,10 +15,7 @@ module.exports = {
     console.log("acc", req.body.account_number);
     //sent email otp
     //lấy email bằng checkingaccount nhưng mà đoạn này t lười viết
-    let account = await accountModel.findOne(
-      "checking_account_number",
-      req.body.account_number
-    );
+    let account = await accountModel.findOne("checking_account_number", req.body.account_number);
     let user = await userModel.findOne("id", account[0].user_id);
     let email = user[0].email;
     console.log("email", email);
@@ -28,10 +25,7 @@ module.exports = {
       //thay thế mail bên dưới bằng biến email ở trên
       to: email,
       subject: "PPNBank",
-      text:
-        "your code is " +
-        random +
-        ". Don't share it; we won't call to ask for it.",
+      text: "your code is " + random + ". Don't share it; we won't call to ask for it.",
     };
     //
     await transporter.sendMail(mailOptions, (error, info) => {
@@ -50,8 +44,8 @@ module.exports = {
     //Lấy account_number từ username
     const users = await userModel.findOne("username", req.body.username);
     const user = users[0];
-    
-    const accounts = await  accountModel.findOne("user_id", user.id);
+
+    const accounts = await accountModel.findOne("user_id", user.id);
     const account = accounts[0];
     console.log(account);
     //update otp to db
@@ -66,10 +60,7 @@ module.exports = {
       //thay thế mail bên dưới bằng biến email ở trên
       to: email,
       subject: "PPNBank",
-      text:
-        "your code is " +
-        random +
-        ". Don't share it; we won't call to ask for it.",
+      text: "your code is " + random + ". Don't share it; we won't call to ask for it.",
     };
     //
     await transporter.sendMail(mailOptions, (error, info) => {
