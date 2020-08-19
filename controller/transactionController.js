@@ -21,15 +21,13 @@ var router = express.Router();
 const confirm = (req) => {
   console.log("header", req.headers);
   const ts = req.headers.ts;
-  const bank_code = req.get("bank_code");
+  const bank_code = req.headers.bank_code;
   const sig = req.headers.sig;
-  const secret = req.headers.secret;
   const currentTime = moment().valueOf();
-  console.log(currentTime);
+  console.log("ts", currentTime);
   console.log(config.auth.partnerRSA);
   console.log("m partCode", bank_code);
   console.log("m partCode2", JSON.stringify(req.body));
-  console.log("m partCode3", secret);
 
   if (currentTime - ts > config.auth.expireTime) {
     console.log("return 1");
@@ -42,19 +40,12 @@ const confirm = (req) => {
   }
 
   const comparingSign = hash.MD5(ts + JSON.stringify(req.body) + config.auth.secret);
+  console.log("sig", comparingSign);
+
   // const comparingSign = "8685a1e0c9a64edb138216e66188fb17";
   if (sig != comparingSign) {
-    console.log(comparingSign);
-    console.log("return 3");
     return 3;
   }
-
-  // if (!req.body.transferer) {
-  //   console.log("return 4");
-  //   return 4;
-  // }
-  // hashSecretKey = md5(config.auth.secret);
-  //  sig = md5(bank_code + ts + JSON.stringify(testbody) + hashSecretKey);
 };
 module.exports = {
   partnerBankDetail: async function (req, res) {
@@ -300,7 +291,7 @@ module.exports = {
         //sig #
 
         return res.status(400).send({
-          message: "The file was changed by strangers." + JSON.stringify(req.headers.sig),
+          message: "The file was changed by strangers.",
         });
       }
     }

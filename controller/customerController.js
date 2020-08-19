@@ -207,6 +207,7 @@ module.exports = {
           activeTab0.push(row);
         }
         if (row.sender_account_number == accountNumber) {
+          console.log("row1", row);
           activeTab1.push(row);
         }
       });

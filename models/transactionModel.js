@@ -23,9 +23,6 @@ module.exports = {
       `select * from transaction_history where sender_bank_code='${bank_code}' or receiver_bank_code='${bank_code}'`
     ),
   findByTime: (dateStart, dateEnd) =>
-
-
-
     db.load(
       `select * from transaction_history where created_at BETWEEN '${dateStart}' AND '${dateEnd}' ORDER BY created_at DESC`
     ),
