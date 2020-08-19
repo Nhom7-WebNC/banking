@@ -18,6 +18,44 @@ const axios = require("axios");
 const kbpgp = require("kbpgp");
 const fs = require("fs");
 var router = express.Router();
+const confirm = (req) => {
+  console.log("header", req.headers);
+  const ts = req.headers.ts;
+  const bank_code = req.get("bank_code");
+  const sig = req.headers.sig;
+  const secret = req.headers.secret;
+  const currentTime = moment().valueOf();
+  console.log(currentTime);
+  console.log(config.auth.partnerRSA);
+  console.log("m partCode", bank_code);
+  console.log("m partCode2", JSON.stringify(req.body));
+  console.log("m partCode3", secret);
+
+  if (currentTime - ts > config.auth.expireTime) {
+    console.log("return 1");
+    return 1;
+  }
+
+  if (bank_code != config.auth.partnerRSA && bank_code != config.auth.partnerPGP) {
+    console.log("return 2");
+    return 2;
+  }
+
+  const comparingSign = hash.MD5(ts + JSON.stringify(req.body) + config.auth.secret);
+  // const comparingSign = "8685a1e0c9a64edb138216e66188fb17";
+  if (sig != comparingSign) {
+    console.log(comparingSign);
+    console.log("return 3");
+    return 3;
+  }
+
+  // if (!req.body.transferer) {
+  //   console.log("return 4");
+  //   return 4;
+  // }
+  // hashSecretKey = md5(config.auth.secret);
+  //  sig = md5(bank_code + ts + JSON.stringify(testbody) + hashSecretKey);
+};
 module.exports = {
   partnerBankDetail: async function (req, res) {
     const body = req.body;
@@ -65,10 +103,10 @@ module.exports = {
           .get("https://banking34.herokuapp.com/api/user/" + num, configAxios)
           .then(function (response) {
             const resu = response.data.fullname;
-            console.log("resu",resu);
+            console.log("resu", resu);
 
-            if(!resu  ){
-              return res.status(400).json({msg:"Nhập sai stk"});
+            if (!resu) {
+              return res.status(400).json({ msg: "Nhập sai stk" });
             }
             return res.status(201).json({ resu });
           })
@@ -97,7 +135,9 @@ module.exports = {
           bank_code + ts.toString() + JSON.stringify(req.body) + config.auth.secretPartnerRSA
         );
         var sig = myKeyPrivate.sign(hashString, "hex", "hex");
+        console.log("sig", sig);
         const headers = { ts, bank_code, sig };
+        console.log("headers", headers);
         const { content, amount, transferer, receiver, payFee } = req.body;
         await accountModel.findOne("checking_account_number", transferer).then((rows) => {
           console.log(rows);
@@ -130,6 +170,26 @@ module.exports = {
                   type: 0,
                 };
                 transactionModel.add(transactionHistory);
+
+                //lưu thông tin người nhận
+                if (req.body.checked == true) {
+                  var result = "";
+
+                  if (req.body.reminder == "") {
+                    result = req.body.receiverName;
+                  } else {
+                    result = req.body.reminder;
+                  }
+                  const newReceiver = {
+                    user_id: req.body.user_id,
+                    name_reminiscent: result,
+                    reminder_account_number: req.body.receiver,
+                    bank_code: "TUB",
+                  };
+                  console.log("newReceiver", newReceiver);
+                  receiverModel.add(newReceiver);
+                }
+
                 const resu = JSON.parse(result.text);
                 res.status(200).json({ resu });
               });
@@ -150,11 +210,11 @@ module.exports = {
         const signature = await signData(data);
         // console.log(signature.split("\r\n").join("\\n"));
         const rows = await accountModel.findOne("checking_account_number", req.body.transferer);
-        var row="";
+        var row = "";
         if (rows.length < 1) {
           return res.status(400).json({ msg: "tài khoản không tồn tại" });
         } else {
-           row = rows[0];
+          row = rows[0];
         }
 
         const configAxios = {
@@ -170,7 +230,10 @@ module.exports = {
           .post("https://banking34.herokuapp.com/api/transfer/update", postBody, configAxios)
           .then(function (response) {
             console.log(postBody);
-            accountModel.updateCheckingMoney(req.body.transferer, row.checking_account_amount - req.body.moneyAmount);
+            accountModel.updateCheckingMoney(
+              req.body.transferer,
+              row.checking_account_amount - req.body.moneyAmount
+            );
             //log
             //history log
             let transactionHistory = {
@@ -178,7 +241,7 @@ module.exports = {
               sender_bank_code: "PPNBank",
               receiver_account_number: postBody.accNum,
               //don't have bankcode of receiver
-              receiver_bank_code: "",
+              receiver_bank_code: "partner34",
               amount: postBody.moneyAmount,
               transaction_fee: 5000,
               log: postBody.transferer + " đã gửi " + postBody.moneyAmount + " cho " + postBody.accNum,
@@ -186,13 +249,30 @@ module.exports = {
               type: 0,
             };
             transactionModel.add(transactionHistory);
+
+            if (req.body.checked == true) {
+              var result = "";
+
+              if (req.body.reminder == "") {
+                result = req.body.receiverName;
+              } else {
+                result = req.body.reminder;
+              }
+              const newReceiver = {
+                user_id: req.body.user_id,
+                name_reminiscent: result,
+                reminder_account_number: req.body.accNum,
+                bank_code: "partner34",
+              };
+              console.log("newReceiver", newReceiver);
+              receiverModel.add(newReceiver);
+            }
+
             return res.status(200).json(response.data);
           })
           .catch(function (error) {
-            console.log("err", error);
-
             console.log("err2", error.response);
-            return res.status(401).send(error.response);
+            return res.status(401).json(error.response);
           });
         break;
       default:
@@ -358,6 +438,14 @@ module.exports = {
       console.log("return 2");
       res.status(401).json({ msg: "wrong bank code" });
     }
+    const comparingSign = hash.MD5(ts + JSON.stringify(req.body) + config.auth.secret);
+    // // const comparingSign = "8685a1e0c9a64edb138216e66188fb17";
+    // if (sig != comparingSign) {
+    //   console.log(comparingSign);
+    //   console.log("return 3");
+
+    //   return 3;
+    // }
 
     if (!req.body.transferer) {
       console.log("return 4");
