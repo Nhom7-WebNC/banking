@@ -28,6 +28,6 @@ module.exports = {
     ),
   findByTime: (dateStart, dateEnd) =>
     db.load(
-      `select * from transaction_history where created_at BETWEEN '${dateStart}' AND '${dateEnd} ORDER BY created_at DESC'`
+      `select * from transaction_history where created_at BETWEEN '${dateStart}' AND '${dateEnd}' ORDER BY created_at DESC`
     ),
 };
