@@ -145,18 +145,20 @@ module.exports = {
       }
     });
   },
+
+
   forgotPassword: function (req, res) {
     //gọi hàm getAccount xem có tồn tại username này không, nếu có
     // thì gọi OTP xong bắt đầu gửi mật khẩu của nó về mail
     const { username, otp } = req.body;
     userModel.findOne("username", username).then((rows) => {
       if (rows.length <= 0) {
-        res.status(403).json({ msg: "không tồn tại username nay" });
+        res.status(403).json({ msg: "Tài khoản không tồn tại" });
       }
       const user = rows[0];
       accountModel.findOne("user_id", user.id).then((row) => {
         if (rows.length <= 0) {
-          res.status(403).json({ msg: "tài khoản không tồn tại" });
+          res.status(403).json({ msg: "Tài khoản không tồn tại" });
         }
         const account = row[0];
         console.log(account.otp_code);
@@ -192,7 +194,7 @@ module.exports = {
             });
           });
         } else {
-          res.status(400).json({ msg: "sai otp" });
+          res.status(400).json({ msg: "Sai mã otp" });
         }
       });
     });

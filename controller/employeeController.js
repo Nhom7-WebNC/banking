@@ -19,7 +19,7 @@ module.exports = {
       .findOne("username", req.body.username)
       .then((rows) => {
         if (rows.length > 0) {
-          res.status(403).json({ msg: "tai khoan da ton tai" });
+          res.status(403).json({ msg: "Tài khoản đã tồn tại" });
         } else {
           var code;
           bcrypt.genSalt(10, (err, salt) => {
@@ -57,7 +57,7 @@ module.exports = {
                 });
             });
 
-            return res.status(200).json({ msg: "dang ki thanh cong" });
+            return res.status(200).json({ msg: "Tạo tài khoản thành công" });
           });
         }
       });
@@ -97,6 +97,9 @@ module.exports = {
       "checking_account_number",
       data.account
     );
+    // if(amount1==0){
+    //   res.status(401).json({msg:"Nhập thiếu thông tin"});
+    // }
     if (account.length <= 0) {
       res.status(403).json({ msg: "Tài khoản không tồn tại" });
     }
