@@ -2,7 +2,7 @@ const db = require("../utils/db");
 const moment = require("moment");
 module.exports = {
   add: (entity) => {
-    entity.created_at = moment().format("YY-MM-DD");
+    entity.created_at = moment().format("YY-MM-DD HH:mm:ss");
     return db.add(entity, "transaction_history");
   },
   findOne: (field, value) => {
