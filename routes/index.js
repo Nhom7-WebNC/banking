@@ -60,6 +60,7 @@ router.post("/admin/create-account", admin, adminController.createAccount);
 router.get("/admin/delete/:id", admin, adminController.delete);
 router.post("/admin/update", admin, adminController.update);
 router.post("/admin/transactions", admin, adminController.getTransaction);
+
 //nhắc nợ
 router.post("/customers/create-debt", customer, debtController.createDebt);
 router.post("/customers/get-debt", customer, debtController.getListDebt);

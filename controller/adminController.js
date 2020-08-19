@@ -85,6 +85,7 @@ module.exports = {
   //------------------------------lịch sử giao dịch---------------------------------------
   getTransaction: async function (req, res, next) {
     var activeTab0 = [];
+    var sum = 0;
     console.log(req.body);
     const bank_code = req.body.bank_code;
     const dateStart = req.body.dateStart;
@@ -100,30 +101,36 @@ module.exports = {
       res
         .status(401)
         .json({ msg: "Ngày bắt đầu không được lớn hơn ngày kết thúc" });
-    }
-    else if (bank_code == "" || dateStart == "" || dateEnd == "") {
+    } else if (bank_code == "" || dateStart == "" || dateEnd == "") {
       res.status(401).json({ msg: "Nhập thiếu thông tin" });
-    } 
-    else {
+    } else {
       if (bank_code == "all") {
         await transactionModel.findByTime(dateStart, dateEnd).then((rows) => {
           rows.map((row) => {
-            activeTab0.push(row);
+            if (
+              row.sender_bank_code != "PPNBank" &&
+              row.receiver_bank_code != "PPNBank"
+            ) {
+              activeTab0.push(row);
+              sum = sum + row.amount;
+            }
           });
         });
       } else {
         await transactionModel.findByTime(dateStart, dateEnd).then((rows) => {
           rows.map((row) => {
-            if (row.sender_bank_code == bank_code || row.receiver_bank_code == bank_code)
-            {
+            if (
+              row.sender_bank_code == bank_code ||
+              row.receiver_bank_code == bank_code
+            ) {
               activeTab0.push(row);
+              sum = sum + row.amount;
             }
           });
         });
       }
-
       activeTab0.length
-        ? res.status(200).json({ data: { activeTab0: activeTab0 } })
+        ? res.status(200).json({ data: { activeTab0: activeTab0, sum: sum } })
         : res.status(401).json({ msg: "Không có giao dịch" });
     }
   },

@@ -19,7 +19,7 @@ module.exports = {
       .findOne("username", req.body.username)
       .then((rows) => {
         if (rows.length > 0) {
-          res.status(403).json({ msg: "tai khoan da ton tai" });
+          res.status(403).json({ msg: "Tài khoản đã tồn tại" });
         } else {
           var code;
           bcrypt.genSalt(10, (err, salt) => {
@@ -57,7 +57,7 @@ module.exports = {
                 });
             });
 
-            return res.status(200).json({ msg: "dang ki thanh cong" });
+            return res.status(200).json({ msg: "Tạo tài khoản thành công" });
           });
         }
       });
@@ -83,32 +83,35 @@ module.exports = {
           .status(200)
           .json({ data: { activeTab0: activeTab0, activeTab1: activeTab1 } })
       : res.status(401).json({ msg: "Tài khoản chưa có giao dịch" });
-
   },
   recharge: async function (req, res, next) {
     const data = {
       account: req.body.accountNumber,
       amount: req.body.amount,
     };
-    const amount1 = parseInt(data.amount);
-    //Kiểm tra tài khoản có tồn tại trong db hay không
-    //Nêu có thực hiện chuyển tiền
-    const account = await accountModel.findOne(
-      "checking_account_number",
-      data.account
-    );
-    if (account.length <= 0) {
-      res.status(403).json({ msg: "Tài khoản không tồn tại" });
-    }
-    else {
-      //lấy số dư hiện tại từ account number
-      const account_use = account[0];
-      const current_amount = account_use.checking_account_amount;
-      accountModel.updateCheckingMoney(
-        account_use.checking_account_number,
-        current_amount + amount1
+    if (data.account == "" || data.amount == "") {
+      res.status(401).json({ msg: "Nhập thiếu thông tin" });
+    } else {
+      const amount1 = parseInt(data.amount);
+      //Kiểm tra tài khoản có tồn tại trong db hay không
+      //Nêu có thực hiện chuyển tiền
+      const account = await accountModel.findOne(
+        "checking_account_number",
+        data.account
       );
-      res.status(201).json({ msg: "Nạp tiền thành công" });
+
+      if (account.length <= 0) {
+        res.status(403).json({ msg: "Tài khoản không tồn tại" });
+      } else {
+        //lấy số dư hiện tại từ account number
+        const account_use = account[0];
+        const current_amount = account_use.checking_account_amount;
+        accountModel.updateCheckingMoney(
+          account_use.checking_account_number,
+          current_amount + amount1
+        );
+        res.status(201).json({ msg: "Nạp tiền thành công" });
+      }
     }
   },
 };
