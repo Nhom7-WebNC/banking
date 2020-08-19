@@ -129,7 +129,6 @@ module.exports = {
           });
         });
       }
-      console.log(sum);
       activeTab0.length
         ? res.status(200).json({ data: { activeTab0: activeTab0, sum: sum } })
         : res.status(401).json({ msg: "Không có giao dịch" });
