@@ -289,7 +289,6 @@ module.exports = {
 
       if (con == 3) {
         //sig #
-
         return res.status(400).send({
           message: "The file was changed by strangers.",
         });
@@ -419,6 +418,7 @@ module.exports = {
 
     console.log("ts", ts2);
     console.log("sig", hashString);
+    console.log("ts", ts2);
 
     if (currentTime - ts > config.auth.expireTime) {
       console.log("return 1");
@@ -431,12 +431,12 @@ module.exports = {
     }
     const comparingSign = hash.MD5(ts + JSON.stringify(req.body) + config.auth.secret);
     // // const comparingSign = "8685a1e0c9a64edb138216e66188fb17";
-    // if (sig != comparingSign) {
-    //   console.log(comparingSign);
-    //   console.log("return 3");
+    if (sig != comparingSign) {
+      console.log(comparingSign);
+      console.log("return 3");
 
-    //   return 3;
-    // }
+      return 3;
+    }
 
     if (!req.body.transferer) {
       console.log("return 4");

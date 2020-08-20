@@ -107,13 +107,8 @@ module.exports = {
       if (bank_code == "all") {
         await transactionModel.findByTime(dateStart, dateEnd).then((rows) => {
           rows.map((row) => {
-            if (
-              row.sender_bank_code != "PPNBank" &&
-              row.receiver_bank_code != "PPNBank"
-            ) {
               activeTab0.push(row);
               sum = sum + row.amount;
-            }
           });
         });
       } else {
